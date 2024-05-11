@@ -1,0 +1,22 @@
+{
+  "name": "capsule-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^20.12.11",
+    "@types/pg-promise": "^5.4.3",
+    "dotenv": "^16.4.5",
+    "pg": "^8.11.5",
+    "pg-promise": "^11.6.0",
+    "postgres": "^3.4.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
