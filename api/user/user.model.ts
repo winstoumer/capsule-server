@@ -21,7 +21,7 @@ async function getUserByTelegramId(telegramId: number): Promise<User | null> {
     try {
         const result = await sql<User[]>`
             SELECT *
-            FROM user
+            FROM users
             WHERE telegram_id = ${telegramId}
         `;
         return result[0] || null;
@@ -34,7 +34,7 @@ async function getUserByTelegramId(telegramId: number): Promise<User | null> {
 async function updateUserFirstName(telegramId: number, firstName: string): Promise<boolean> {
     try {
         await sql`
-            UPDATE user
+            UPDATE users
             SET first_name = ${firstName}, time_update = NOW()
             WHERE telegram_id = ${telegramId}
         `;
@@ -48,10 +48,10 @@ async function updateUserFirstName(telegramId: number, firstName: string): Promi
 async function getUserByTelegramIdWithInfo(telegramId: number): Promise<UserWithInfo | null> {
     try {
         const result = await sql<UserWithInfo[]>`
-            SELECT user.*, user_matter.balance, user_matter.level
-            FROM user
+            SELECT users.*, user_matter.balance, user_matter.level
+            FROM users
             LEFT JOIN user_matter ON user.telegram_id = user_matter.telegram_id
-            WHERE user.telegram_id = ${telegramId}
+            WHERE users.telegram_id = ${telegramId}
         `;
         return result[0] || null;
     } catch (error) {
