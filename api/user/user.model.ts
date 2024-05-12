@@ -48,9 +48,10 @@ async function updateUserFirstName(telegramId: number, firstName: string): Promi
 async function getUserByTelegramIdWithInfo(telegramId: number): Promise<UserWithInfo | null> {
     try {
         const result = await sql<UserWithInfo[]>`
-            SELECT users.*, user_matter.balance, user_matter.level
+            SELECT users.*, balance.balance, user_matter.level
             FROM users
-            LEFT JOIN user_matter ON user.telegram_id = user_matter.telegram_id
+            LEFT JOIN balance ON users.telegram_id = balance.telegram_id
+            LEFT JOIN user_matter ON users.telegram_id = user_matter.telegram_id
             WHERE users.telegram_id = ${telegramId}
         `;
         return result[0] || null;
