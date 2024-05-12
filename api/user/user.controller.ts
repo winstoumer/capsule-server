@@ -1,7 +1,7 @@
 // user.controller.ts
 
 import { Request, Response } from 'express';
-import { getUserByTelegramId, updateUserFirstName } from './user.model';
+import { getUserByTelegramId, updateUserFirstName, getUserByTelegramIdWithInfo } from './user.model';
 
 async function getUserByTelegramIdHandler(req: Request, res: Response): Promise<void> {
   const { telegramId } = req.params;
@@ -34,4 +34,19 @@ async function updateUserFirstNameHandler(req: Request, res: Response): Promise<
   }
 }
 
-export { getUserByTelegramIdHandler, updateUserFirstNameHandler };
+async function getUserByTelegramIdWithInfoHandler(req: Request, res: Response): Promise<void> {
+  const { telegramId } = req.params;
+  try {
+    const userWithInfo = await getUserByTelegramIdWithInfo(parseInt(telegramId, 10));
+    if (userWithInfo) {
+      res.json(userWithInfo);
+    } else {
+      res.status(404).json({ message: 'Пользователь не найден' });
+    }
+  } catch (error) {
+    console.error('Ошибка при получении данных пользователя:', error);
+    res.status(500).json({ message: 'Произошла ошибка при получении данных пользователя' });
+  }
+}
+
+export { getUserByTelegramIdHandler, updateUserFirstNameHandler, getUserByTelegramIdWithInfoHandler };
