@@ -1,5 +1,4 @@
 import * as dotenv from 'dotenv';
-import * as postgres from 'postgres'
 
 dotenv.config();
 
@@ -16,8 +15,7 @@ app.use('/api/referral', referralRouter);
 
 app.use('/api/user', userRouter);
 
-// Запускаем сервер
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
