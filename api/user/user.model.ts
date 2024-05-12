@@ -45,20 +45,20 @@ async function updateUserFirstName(telegramId: number, firstName: string): Promi
     }
 }
 
-async function getUserByTelegramIdWithInfo(telegramId: number): Promise<UserWithInfo | null> {
+async function getUserInfoByTelegramId(telegramId: number): Promise<any | null> {
     try {
-        const result = await sql<UserWithInfo[]>`
-            SELECT users.*, balance.balance, user_matter.level
-            FROM users
-            LEFT JOIN balance ON users.telegram_id = balance.telegram_id
-            LEFT JOIN user_matter ON users.telegram_id = user_matter.telegram_id
-            WHERE users.telegram_id = ${telegramId}
+        const result = await sql`
+            SELECT balance.balance, user_matter.matter_id, matter.*
+            FROM balance
+            INNER JOIN user_matter ON balance.telegram_id = user_matter.telegram_id
+            INNER JOIN matter ON user_matter.matter_id = matter.matter_id
+            WHERE balance.telegram_id = ${telegramId}
         `;
-        return result[0] || null;
+        return result || null;
     } catch (error) {
-        console.error('Ошибка при получении данных пользователя с информацией о балансе и уровне:', error);
+        console.error('Ошибка при получении данных пользователя по telegram_id:', error);
         return null;
     }
 }
 
-export { User, UserWithInfo, getUserByTelegramId, updateUserFirstName, getUserByTelegramIdWithInfo };
+export { User, UserWithInfo, getUserByTelegramId, updateUserFirstName, getUserInfoByTelegramId };

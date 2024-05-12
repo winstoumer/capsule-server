@@ -1,7 +1,7 @@
 // user.controller.ts
 
 import { Request, Response } from 'express';
-import { getUserByTelegramId, updateUserFirstName, getUserByTelegramIdWithInfo } from './user.model';
+import { getUserByTelegramId, updateUserFirstName, getUserInfoByTelegramId } from './user.model';
 
 async function getUserByTelegramIdHandler(req: Request, res: Response): Promise<void> {
   const { telegramId } = req.params;
@@ -37,7 +37,7 @@ async function updateUserFirstNameHandler(req: Request, res: Response): Promise<
 async function getUserByTelegramIdWithInfoHandler(req: Request, res: Response): Promise<void> {
   const { telegramId } = req.params;
   try {
-    const userWithInfo = await getUserByTelegramIdWithInfo(parseInt(telegramId, 10));
+    const userWithInfo = await getUserInfoByTelegramId(parseInt(telegramId, 10));
     if (userWithInfo) {
       res.json(userWithInfo);
     } else {
