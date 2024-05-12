@@ -2,10 +2,20 @@
 
 import { sql } from '../database';
 
-async function getCurrentMiningByTelegramId(telegramId: number): Promise<any | null> {
+interface CurrentMiningData {
+    id: number;
+    user_id: string;
+    telegram_id: number;
+    time: Date;
+    next_time: Date;
+    matter_id: number;
+    matter_data: any;
+}
+
+async function getCurrentMiningByTelegramId(telegramId: number): Promise<CurrentMiningData | null> {
     try {
-        const result = await sql`
-            SELECT current_mining.*, matter.time_mine AS matter_time_mine
+        const result = await sql<CurrentMiningData[]>`
+            SELECT current_mining.*, matter.*
             FROM current_mining
             LEFT JOIN matter ON current_mining.matter_id = matter.matter_id
             WHERE current_mining.telegram_id = ${telegramId}
