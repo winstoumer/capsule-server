@@ -9,22 +9,18 @@ interface Task {
   reward: number;
   time: Date;
   active: boolean;
+  // not in the database
+  ready: boolean;
 }
 
 async function getAllTasksByTelegramId(telegramId: number): Promise<Task[]> {
   try {
     const tasks = await sql<Task[]>`
-      SELECT *
+      SELECT task.*, CASE WHEN completed_task.task_id IS NOT NULL THEN true ELSE false END AS ready
       FROM task
-      WHERE active = true
-      ORDER BY
-        CASE WHEN EXISTS (
-          SELECT 1
-          FROM completed_task
-          WHERE completed_task.task_id = task.task_id
-            AND completed_task.telegram_id = ${telegramId}
-        ) THEN 1 ELSE 0 END,
-        time;
+      LEFT JOIN completed_task ON task.task_id = completed_task.task_id AND completed_task.telegram_id = ${telegramId}
+      WHERE task.active = true
+      ORDER BY ready, task.time;
     `;
     return tasks;
   } catch (error) {
