@@ -6,12 +6,15 @@ dotenv.config();
 import * as express from 'express';
 import { balanceRouter } from './api/balance';
 import { referralRouter } from './api/referral';
+import { userRouter } from './api/user';
 
 const app = express();
 
 app.use('/api/balance', balanceRouter);
 
 app.use('/api/referral', referralRouter);
+
+app.use('/api/user', userRouter);
 
 // Запускаем сервер
 const PORT = process.env.PORT || 3000;
