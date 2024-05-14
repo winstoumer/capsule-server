@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import * as ntpClient from 'ntp-client';
 import * as express from 'express';
+import { botRouter } from './api/bot';
 import { balanceRouter } from './api/balance';
 import { referralRouter } from './api/referral';
 import { userRouter } from './api/user';
@@ -13,19 +14,10 @@ dotenv.config();
 
 const app = express();
 
-const TelegramBot = require('node-telegram-bot-api');
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
-
-console.log('Bot ready..');
-
-bot.on('message', async (msg: any) => {
-    const chatId = msg.chat.id;
-    bot.sendMessage(chatId, 'Привет, я бот вашего приложения! Чем могу помочь?');
-});
-
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/bot', botRouter);
 app.use('/api/balance', balanceRouter);
 app.use('/api/referral', referralRouter);
 app.use('/api/user', userRouter);
