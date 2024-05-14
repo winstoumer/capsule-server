@@ -12,8 +12,13 @@ async function getAllActiveMatterHandler(req: Request, res: Response): Promise<v
 }
 
 async function updateUserMatterHandler(req: Request, res: Response): Promise<void> {
-  const { telegram_id } = req.params;
-  const { matter_id } = req.body;
+  const { telegram_id } = req.params; // Извлекаем telegram_id из параметров URL
+  const { matter_id } = req.body; // Извлекаем matter_id из тела запроса
+
+  if (matter_id === undefined) {
+    res.status(400).json({ message: 'Необходимо указать matter_id' });
+    return;
+  }
 
   try {
     await updateUserMatterByTelegramId(Number(telegram_id), matter_id);
