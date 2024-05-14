@@ -1,7 +1,7 @@
 // task.controller.ts
 
 import { Request, Response } from 'express';
-import { getAllTasksByTelegramId } from './task.model';
+import { getAllTasksByTelegramId, completeTask } from './task.model';
 
 async function getAllTasksByTelegramIdHandler(req: Request, res: Response): Promise<void> {
   const { telegramId } = req.params;
@@ -15,4 +15,15 @@ async function getAllTasksByTelegramIdHandler(req: Request, res: Response): Prom
   }
 }
 
-export { getAllTasksByTelegramIdHandler };
+async function completeTaskHandler(req: Request, res: Response): Promise<void> {
+  const { telegramId, taskId } = req.params;
+  try {
+    await completeTask(parseInt(telegramId, 10), parseInt(taskId, 10));
+    res.status(200).json({ message: 'Задание успешно отмечено как выполненное.' });
+  } catch (error) {
+    console.error('Ошибка при отметке задания как выполненного:', error);
+    res.status(500).json({ message: 'Произошла ошибка при отметке задания как выполненного.' });
+  }
+}
+
+export { getAllTasksByTelegramIdHandler, completeTaskHandler };

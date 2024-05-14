@@ -9,8 +9,22 @@ interface Task {
   reward: number;
   time: Date;
   active: boolean;
+  link: string;
   // not in the database
   ready: boolean;
+}
+
+interface User {
+  id: number;
+  telegram_id: number;
+}
+
+interface CompletedTask {
+  id: number;
+  user_id: string;
+  telegram_id: number;
+  task_id: number;
+  time: Date;
 }
 
 async function getAllTasksByTelegramId(telegramId: number): Promise<Task[]> {
@@ -29,4 +43,34 @@ async function getAllTasksByTelegramId(telegramId: number): Promise<Task[]> {
   }
 }
 
-export { Task, getAllTasksByTelegramId };
+async function completeTask(telegramId: number, taskId: number): Promise<void> {
+  try {
+    // Проверяем, существует ли запись о выполненном задании с task_id для данного telegram_id
+    const existingCompletedTask = await sql<CompletedTask[]>`
+      SELECT * FROM completed_task WHERE telegram_id = ${telegramId} AND task_id = ${taskId};
+    `;
+
+    if (existingCompletedTask.length === 0) {
+      // Если запись не существует, добавляем новую запись
+      const user = await sql<User[]>`
+        SELECT * FROM users WHERE telegram_id = ${telegramId};
+      `;
+
+      if (user.length === 0) {
+        throw new Error(`Пользователь с telegram_id ${telegramId} не найден.`);
+      }
+
+      const userId = user[0].id;
+
+      await sql`
+        INSERT INTO completed_task (user_id, telegram_id, task_id, time)
+        VALUES (${userId}, ${telegramId}, ${taskId}, NOW());
+      `;
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении выполненного задания:', error);
+    throw error;
+  }
+}
+
+export { Task, getAllTasksByTelegramId, completeTask};
