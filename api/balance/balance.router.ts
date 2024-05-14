@@ -3,12 +3,12 @@
 import { Router } from 'express';
 import { getBalance, updateBalance } from './balance.controller';
 
-const router = Router();
+const balanceRouter = Router();
 
 // Маршрут для получения баланса по telegram_id
-router.get('/:telegramId', getBalance);
+balanceRouter.get('/:telegramId', getBalance);
 
 // Маршрут для обновления баланса по telegram_id
-router.put('/:telegramId', updateBalance);
+balanceRouter.put('/:telegramId', updateBalance);
 
-export { router };
+export { balanceRouter };
