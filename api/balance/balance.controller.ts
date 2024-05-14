@@ -30,7 +30,7 @@ async function updateBalance(req: Request, res: Response): Promise<void> {
 
   try {
     await updateBalanceByTelegramId(Number(telegramId), amount);
-    res.json({ message: 'Баланс успешно обновлен' });
+    res.json({ message: 'Баланс успешно обновлен.' });
   } catch (error) {
     console.error('Ошибка при обновлении баланса:', error);
     res.status(500).json({ message: 'Ошибка сервера' });
