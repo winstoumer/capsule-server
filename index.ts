@@ -2,6 +2,8 @@ import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import * as ntpClient from 'ntp-client';
 
+dotenv.config();
+
 import { botRouter } from './api/bot';
 import { balanceRouter } from './api/balance';
 import { referralRouter } from './api/referral';
@@ -9,8 +11,6 @@ import { userRouter } from './api/user';
 import { taskRouter } from './api/task';
 import { matterRouter } from './api/matter';
 import { currentMiningRouter } from './api/currentMining';
-
-dotenv.config();
 
 import * as express from 'express';
 
@@ -61,7 +61,6 @@ const formatDateUTC = (time: Date): string => {
 };
 
 const PORT = process.env.PORT || 3002;
-
 app.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
