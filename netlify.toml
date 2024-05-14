@@ -11,5 +11,13 @@
   DATABASE_USER = "koyeb-adm"
   DATABASE_PASSWORD = "kXSOyPE02AIj"
   PORT = "5432"
+  
+[functions]
+  external_node_modules = ["express"]
+  node_bundler = "esbuild"
+[[redirects]]
+  force = true
+  from = "/api/*"
+  status = 200
+  to = "/.netlify/functions/api/:splat"
 
-[context.deploy-preview.environment]
