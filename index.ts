@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import * as ntpClient from 'ntp-client';
-import * as express from 'express';
+
 import { botRouter } from './api/bot';
 import { balanceRouter } from './api/balance';
 import { referralRouter } from './api/referral';
@@ -11,6 +11,8 @@ import { matterRouter } from './api/matter';
 import { currentMiningRouter } from './api/currentMining';
 
 dotenv.config();
+
+import * as express from 'express';
 
 const app = express();
 
