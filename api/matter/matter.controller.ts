@@ -12,14 +12,11 @@ async function getAllActiveMatterHandler(req: Request, res: Response): Promise<v
 }
 
 async function updateUserMatterHandler(req: Request, res: Response): Promise<void> {
-  const { telegram_id, matter_id } = req.body;
-  if (telegram_id === undefined || matter_id === undefined) {
-    res.status(400).json({ message: 'Необходимо указать telegram_id и matter_id' });
-    return;
-  }
+  const { telegram_id } = req.params;
+  const { matter_id } = req.body;
 
   try {
-    await updateUserMatterByTelegramId(telegram_id, matter_id);
+    await updateUserMatterByTelegramId(Number(telegram_id), matter_id);
     res.json({ message: 'Запись в таблице user_matter успешно обновлена' });
   } catch (error) {
     console.error('Ошибка при обновлении записи в таблице user_matter:', error);

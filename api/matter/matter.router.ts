@@ -6,6 +6,6 @@ import { getAllActiveMatterHandler, updateUserMatterHandler } from './matter.con
 const matterRouter = Router();
 
 matterRouter.get('/', getAllActiveMatterHandler);
-matterRouter.put('/upgrade', updateUserMatterHandler);
+matterRouter.put('/upgrade/:telegram_id', updateUserMatterHandler);
 
 export { matterRouter };
