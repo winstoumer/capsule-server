@@ -59,6 +59,7 @@ const formatDateUTC = (time: Date): string => {
 };
 
 const PORT = process.env.PORT || 3002;
+
 app.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
