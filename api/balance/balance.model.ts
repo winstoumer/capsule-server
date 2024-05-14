@@ -28,9 +28,10 @@ async function getBalanceByTelegramId(telegramId: number): Promise<number | null
 async function updateBalanceByTelegramId(telegramId: number, amount: number): Promise<void> {
   try {
     const time_update = new Date();
+    const formattedAmount = -Math.abs(amount);
     await sql`
       UPDATE balance
-      SET balance = balance - ${amount}, time_update = ${time_update}
+      SET balance = balance + ${formattedAmount}, time_update = ${time_update}
       WHERE telegram_id = ${telegramId}
     `;
   } catch (error) {
