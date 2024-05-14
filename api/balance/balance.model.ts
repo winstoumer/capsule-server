@@ -25,15 +25,16 @@ async function getBalanceByTelegramId(telegramId: number): Promise<number | null
   }
 }
 
-async function updateBalanceByTelegramId(telegramId: number, price: number): Promise<void> {
+async function updateBalanceByTelegramId(telegramId: number, amount: number): Promise<void> {
   try {
+    const time_update = new Date();
     await sql`
       UPDATE balance
-      SET balance = balance - ${price}, time_update = NOW()
+      SET balance = balance + ${amount}, time_update = ${time_update}
       WHERE telegram_id = ${telegramId}
     `;
   } catch (error) {
-    console.error('Ошибка при обновлении баланса по telegram_id:', error);
+    console.error('Ошибка при обновлении баланса:', error);
     throw error;
   }
 }
