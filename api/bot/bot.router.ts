@@ -11,7 +11,7 @@ botRouter.post('/sendReferralMessage', async (req: any, res: any) => {
     const { telegramUserId } = req.body;
 
     try {
-        await bot.sendMessage(telegramUserId, `Your referral link:  https://t.me/gbaswebtest_bot?start=r_${telegramUserId}`);
+        await bot.sendMessage(telegramUserId, `Your referral link: https://t.me/gbaswebtest_bot?start=r_${telegramUserId}`);
         res.sendStatus(200);
     } catch (error) {
         console.error(error);
