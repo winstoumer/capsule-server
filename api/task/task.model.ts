@@ -16,6 +16,7 @@ interface Task {
 
 interface User {
   id: number;
+  user_id: string;
   telegram_id: number;
 }
 
@@ -53,14 +54,14 @@ async function completeTask(telegramId: number, taskId: number): Promise<void> {
     if (existingCompletedTask.length === 0) {
       // Если запись не существует, добавляем новую запись
       const user = await sql<User[]>`
-        SELECT * FROM users WHERE telegram_id = ${telegramId};
+        SELECT user_id FROM users WHERE telegram_id = ${telegramId};
       `;
 
       if (user.length === 0) {
         throw new Error(`Пользователь с telegram_id ${telegramId} не найден.`);
       }
 
-      const userId = user[0].id;
+      const userId = user[0].user_id; // Здесь userId уже является значением UUID
 
       await sql`
         INSERT INTO completed_task (user_id, telegram_id, task_id, time)
