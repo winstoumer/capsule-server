@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build" # Команда для сборки вашего приложения
+  publish = "build/" # Директория, содержащая файлы для развертывания
+
+[dev]
+  command = "npm run start" # Команда для локального развертывания при разработке
+
+[context.production.environment]
+  DATABASE_HOST = "ep-dark-waterfall-a2q77tg7.eu-central-1.pg.koyeb.app"
+  DATABASE_NAME = "koyebdb"
+  DATABASE_USER = "koyeb-adm"
+  DATABASE_PASSWORD = "kXSOyPE02AIj"
+  PORT = "5432"
+
+[context.deploy-preview.environment]
+  # Параметры для среды предварительного просмотра, если используется
