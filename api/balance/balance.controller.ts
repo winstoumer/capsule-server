@@ -1,21 +1,40 @@
 // balance.controller.ts
 
 import { Request, Response } from 'express';
-import { getBalanceByTelegramId } from './balance.model';
+import { getBalanceByTelegramId, updateBalanceByTelegramId } from './balance.model';
 
 // Обработчик для получения баланса по telegram_id
 async function getBalance(req: Request, res: Response): Promise<void> {
   const { telegramId } = req.params;
   try {
     const balance = await getBalanceByTelegramId(Number(telegramId));
-    if (balance) {
-      res.json(balance);
+    if (balance !== null) {
+      res.json({ balance });
     } else {
       res.status(404).json({ message: 'Баланс не найден' });
     }
   } catch (error) {
+    console.error('Ошибка при получении баланса:', error);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 }
 
-export { getBalance };
+// Обработчик для обновления баланса по telegram_id
+async function updateBalance(req: Request, res: Response): Promise<void> {
+  const { telegramId } = req.params;
+  const { amount } = req.body;
+  if (typeof amount !== 'number') {
+    res.status(400).json({ message: 'Неверный формат суммы' });
+    return;
+  }
+
+  try {
+    await updateBalanceByTelegramId(Number(telegramId), amount);
+    res.json({ message: 'Баланс успешно обновлен' });
+  } catch (error) {
+    console.error('Ошибка при обновлении баланса:', error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
+}
+
+export { getBalance, updateBalance };

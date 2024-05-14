@@ -2,4 +2,4 @@
 
 export * from './balance.controller';
 export * from './balance.model';
-export { default as balanceRouter } from './balance.router';
+export * from './balance.router';

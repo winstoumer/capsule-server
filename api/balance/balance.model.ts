@@ -25,5 +25,18 @@ async function getBalanceByTelegramId(telegramId: number): Promise<number | null
   }
 }
 
-export { Balance, getBalanceByTelegramId };
+async function updateBalanceByTelegramId(telegramId: number, price: number): Promise<void> {
+  try {
+    await sql`
+      UPDATE balance
+      SET balance = balance - ${price}, time_update = NOW()
+      WHERE telegram_id = ${telegramId}
+    `;
+  } catch (error) {
+    console.error('Ошибка при обновлении баланса по telegram_id:', error);
+    throw error;
+  }
+}
+
+export { Balance, getBalanceByTelegramId, updateBalanceByTelegramId };
 

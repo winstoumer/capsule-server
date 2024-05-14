@@ -1,10 +1,14 @@
 // balance.router.ts
 
 import { Router } from 'express';
-import { getBalance } from './balance.controller';
+import { getBalance, updateBalance } from './balance.controller';
 
 const router = Router();
 
+// Маршрут для получения баланса по telegram_id
 router.get('/:telegramId', getBalance);
 
-export default router;
+// Маршрут для обновления баланса по telegram_id
+router.put('/:telegramId', updateBalance);
+
+export { router };
