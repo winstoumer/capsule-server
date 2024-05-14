@@ -15,6 +15,7 @@ import { currentMiningRouter } from './api/currentMining';
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 app.use('/api/balance', balanceRouter);
 app.use('/api/referral', referralRouter);
