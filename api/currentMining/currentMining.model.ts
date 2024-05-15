@@ -27,10 +27,10 @@ async function getCurrentMiningByTelegramId(telegramId: number): Promise<Current
     }
 }
 
-async function updateCurrentMiningByTelegramId(telegramId: number, matterId: number): Promise<boolean> {
+async function updateCurrentMiningByTelegramId(telegram_id: number, matter_id: number): Promise<boolean> {
     try {
         const matterTime = await sql<{ time_mine: number }[]>`
-            SELECT time_mine FROM matter WHERE matter_id = ${matterId}
+            SELECT time_mine FROM matter WHERE matter_id = ${matter_id}
         `;
         
         const currentTime = new Date();
@@ -41,8 +41,8 @@ async function updateCurrentMiningByTelegramId(telegramId: number, matterId: num
 
         await sql`
             UPDATE current_mining
-            SET matter_id = ${matterId}, time = NOW(), next_time = ${nextTime}
-            WHERE telegram_id = ${telegramId}
+            SET matter_id = ${matter_id}, time = NOW(), next_time = ${nextTime}
+            WHERE telegram_id = ${telegram_id}
         `;
         return true;
     } catch (error) {
