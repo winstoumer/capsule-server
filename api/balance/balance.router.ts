@@ -1,7 +1,7 @@
 // balance.router.ts
 
 import { Router } from 'express';
-import { getBalance, updateBalance } from './balance.controller';
+import { getBalance, updateBalance, updateBalanceCoins } from './balance.controller';
 
 const balanceRouter = Router();
 
@@ -10,5 +10,8 @@ balanceRouter.get('/:telegramId', getBalance);
 
 // Маршрут для обновления баланса по telegram_id
 balanceRouter.put('/:telegramId', updateBalance);
+
+// Маршрут для обновления баланса по telegram_id
+balanceRouter.put('/mined/:telegramId', updateBalanceCoins);
 
 export { balanceRouter };

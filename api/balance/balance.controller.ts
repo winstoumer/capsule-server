@@ -1,7 +1,7 @@
 // balance.controller.ts
 
 import { Request, Response } from 'express';
-import { getBalanceByTelegramId, updateBalanceByTelegramId } from './balance.model';
+import { getBalanceByTelegramId, updateBalanceByTelegramId, updateBalanceAddCoins } from './balance.model';
 
 // Обработчик для получения баланса по telegram_id
 async function getBalance(req: Request, res: Response): Promise<void> {
@@ -37,4 +37,22 @@ async function updateBalance(req: Request, res: Response): Promise<void> {
   }
 }
 
-export { getBalance, updateBalance };
+// Обработчик для обновления баланса добавляя coins по telegram_id
+async function updateBalanceCoins(req: Request, res: Response): Promise<void> {
+  const { telegramId } = req.params;
+  const { amount } = req.body;
+  if (typeof amount !== 'number') {
+    res.status(400).json({ message: 'Неверный формат суммы' });
+    return;
+  }
+
+  try {
+    await updateBalanceAddCoins(Number(telegramId), amount);
+    res.json({ message: 'Баланс успешно обновлен.' });
+  } catch (error) {
+    console.error('Ошибка при обновлении баланса:', error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
+}
+
+export { getBalance, updateBalance, updateBalanceCoins };
