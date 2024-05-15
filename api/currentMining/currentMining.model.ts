@@ -43,14 +43,13 @@ async function updateCurrentMiningByTelegramId(telegram_id: number, matter_id: n
                 SELECT time_mine FROM matter WHERE matter_id = ${matter_id}
             `;
 
-            // Если данные о времени майнинга найдены, продолжаем обновление записи в таблице current_mining
             if (matterTime.length > 0) {
                 const time_mine = matterTime[0].time_mine;
                 const currentTime = new Date();
-                const nextTime = new Date(currentTime);
-                // Добавляем интервал времени к текущему времени для next_time
-                nextTime.setHours(nextTime.getHours() + time_mine);
-
+            
+                // Добавляем 1 час к текущему времени для nextTime
+                const nextTime = new Date(currentTime.getTime() + time_mine * 60 * 60 * 1000);
+            
                 // Обновляем запись в таблице current_mining
                 await sql`
                     UPDATE current_mining
