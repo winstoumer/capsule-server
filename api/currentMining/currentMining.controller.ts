@@ -20,7 +20,7 @@ async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response):
 
 async function updateCurrentMiningByTelegramIdHandler(req: Request, res: Response): Promise<void> {
     const { telegram_id } = req.params;
-    const { matter_id } = req.body;
+    const matter_id = parseInt(req.body.matter_id, 10);
     try {
         const success = await updateCurrentMiningByTelegramId(parseInt(telegram_id, 10), matter_id);
         if (success) {
