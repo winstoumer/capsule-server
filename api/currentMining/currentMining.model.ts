@@ -29,25 +29,31 @@ async function getCurrentMiningByTelegramId(telegramId: number): Promise<Current
 
 async function updateCurrentMiningByTelegramId(telegram_id: number, matter_id: number): Promise<boolean> {
     try {
+        // Получаем время майнинга для указанного matter_id
         const matterTime = await sql<{ time_mine: number }[]>`
             SELECT time_mine FROM matter WHERE matter_id = ${matter_id}
         `;
         
-        const currentTime = new Date();
-        const nextTime = new Date(currentTime);
-        
-        // Добавляем интервал времени к текущему времени для next_time
-        nextTime.setHours(nextTime.getHours() + matterTime[0]?.time_mine);
+        if (matterTime.length > 0) {
+            const currentTime = new Date();
+            const nextTime = new Date(currentTime);
+            // Добавляем интервал времени к текущему времени для next_time
+            nextTime.setHours(nextTime.getHours() + matterTime[0]?.time_mine);
 
-        await sql`
-            UPDATE current_mining
-            SET matter_id = ${matter_id}, time = NOW(), next_time = ${nextTime}
-            WHERE telegram_id = ${telegram_id}
-        `;
-        return true;
+            // Выполняем запрос на обновление записи в таблице current_mining
+            await sql`
+                UPDATE current_mining
+                SET matter_id = ${matter_id}, time = NOW(), next_time = ${nextTime}
+                WHERE telegram_id = ${telegram_id}
+            `;
+            return true; // Всё прошло успешно
+        } else {
+            console.error('Данные о времени майнинга не найдены для matter_id:', matter_id);
+            return false; // Данные о времени майнинга не найдены
+        }
     } catch (error) {
         console.error('Ошибка при обновлении данных о текущем майнинге:', error);
-        return false;
+        return false; // Произошла ошибка при обновлении данных
     }
 }
 
