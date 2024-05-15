@@ -23,7 +23,7 @@ async function updateCurrentMiningByTelegramIdHandler(req: Request, res: Respons
     const { matter_id } = req.body;
 
     try {
-        const success = await updateCurrentMiningByTelegramId(Number(telegram_id), matter_id);
+        const success = await updateCurrentMiningByTelegramId(Number(telegram_id), Number(matter_id));
         if (success) {
             res.json({ message: 'Данные о текущем майнинге успешно обновлены' });
         } else {
