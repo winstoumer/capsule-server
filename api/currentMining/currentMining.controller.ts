@@ -23,12 +23,8 @@ async function updateCurrentMiningByTelegramIdHandler(req: Request, res: Respons
     const { matter_id } = req.body;
 
     try {
-        const success = await updateCurrentMiningByTelegramId(Number(telegram_id), Number(matter_id));
-        if (success) {
-            res.json({ message: 'Данные о текущем майнинге успешно обновлены' });
-        } else {
-            res.status(404).json({ message: 'Текущий майнинг не найден' });
-        }
+        await updateCurrentMiningByTelegramId(Number(telegram_id), matter_id);
+        res.json({ message: 'Данные о текущем майнинге успешно обновлены' });
     } catch (error) {
         console.error('Ошибка при обновлении данных о текущем майнинге:', error);
         res.status(500).json({ message: 'Произошла ошибка при обновлении данных о текущем майнинге' });
