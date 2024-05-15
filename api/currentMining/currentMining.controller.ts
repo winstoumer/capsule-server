@@ -19,11 +19,11 @@ async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response):
 }
 
 async function updateCurrentMiningByTelegramIdHandler(req: Request, res: Response): Promise<void> {
-    const { telegram_id } = req.params;
+    const { telegramId } = req.params;
     const { matter_id } = req.body;
 
     try {
-        await updateCurrentMiningByTelegramId(parseInt(telegram_id, 10), Number(matter_id));
+        await updateCurrentMiningByTelegramId(parseInt(telegramId, 10), Number(matter_id));
         res.json({ message: 'Данные о текущем майнинге успешно обновлены' });
     } catch (error) {
         console.error('Ошибка при обновлении данных о текущем майнинге:', error);

@@ -37,7 +37,7 @@ async function getCurrentMiningByTelegramId(telegramId: number): Promise<Current
 }
 
 // Функция для обновления записи о текущем майнинге
-async function updateCurrentMiningByTelegramId(telegram_id: number, matter_id: number): Promise<void> {
+async function updateCurrentMiningByTelegramId(telegramId: number, matter_id: number): Promise<void> {
     try {
         const matterTime = await sql<{ time_mine: number }[]>`
                 SELECT time_mine FROM matter WHERE matter_id = ${matter_id}
@@ -54,7 +54,7 @@ async function updateCurrentMiningByTelegramId(telegram_id: number, matter_id: n
                 await sql`
                     UPDATE current_mining
                     SET time = NOW(), next_time = ${nextTime}, matter_id = ${matter_id}
-                    WHERE telegram_id = ${telegram_id}
+                    WHERE telegram_id = ${telegramId}
                 `;
             } else {
                 console.error('Данные о времени майнинга не найдены для matter_id:', matter_id);
