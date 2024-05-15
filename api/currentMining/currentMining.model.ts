@@ -53,7 +53,7 @@ async function updateCurrentMiningByTelegramId(telegram_id: number, matter_id: n
                 // Обновляем запись в таблице current_mining
                 await sql`
                     UPDATE current_mining
-                    SET matter_id = ${matter_id}, time = NOW(), next_time = ${nextTime}
+                    SET time = NOW(), next_time = ${nextTime}, matter_id = ${matter_id}
                     WHERE telegram_id = ${telegram_id}
                 `;
             } else {
