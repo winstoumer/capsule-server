@@ -27,6 +27,26 @@ app.use('/api/task', taskRouter);
 app.use('/api/matter', matterRouter);
 app.use('/api/currentMining', currentMiningRouter);
 
+app.get('/api/ton-json/tonconnect-manifest.json', async (req, res) => {
+    try {
+      const data = await fetchData();
+
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error });
+    }
+  });
+  
+  async function fetchData() {
+    return {
+      "url": "https://capsule09876.netlify.app",
+      "name": "Capsule",
+      "iconUrl": "https://i.ibb.co/kqdtY34/Untitled.png",
+      "termsOfUseUrl": "https://capsule09876.netlify.app",
+      "privacyPolicyUrl": "https://capsule09876.netlify.app"
+    };
+  }
+
 app.get('/api/currentTime', async (req, res) => {
     try {
         const currentTime = await getCurrentTimeFromNTP(); // Получаем текущее время с NTP-сервера
