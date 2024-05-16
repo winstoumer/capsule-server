@@ -39,7 +39,7 @@ async function updateBalance(req: Request, res: Response): Promise<void> {
 
 // Обработчик для обновления баланса добавляя coins по telegram_id
 async function updateBalanceCoins(req: Request, res: Response): Promise<void> {
-  const { telegram_id } = req.params;
+  const { telegramId } = req.params;
   const { amount } = req.body;
   if (typeof amount !== 'number') {
     res.status(400).json({ message: 'Неверный формат суммы' });
@@ -47,7 +47,7 @@ async function updateBalanceCoins(req: Request, res: Response): Promise<void> {
   }
 
   try {
-    await updateBalanceAddCoins(Number(telegram_id), amount);
+    await updateBalanceAddCoins(parseInt(telegramId, 10), Number(amount));
     res.json({ message: 'Баланс успешно обновлен.' });
   } catch (error) {
     console.error('Ошибка при обновлении баланса:', error);
