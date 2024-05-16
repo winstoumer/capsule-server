@@ -12,15 +12,6 @@ interface CurrentMiningData {
     matter_data: any;
 }
 
-interface CurrentMiningRecord {
-    id: number;
-    user_id: string; // uuid
-    telegram_id: number;
-    time: Date;
-    next_time: Date;
-    matter_id: number;
-}
-
 async function getCurrentMiningByTelegramId(telegramId: number): Promise<CurrentMiningData | null> {
     try {
         const result = await sql<CurrentMiningData[]>`
