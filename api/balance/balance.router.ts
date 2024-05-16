@@ -9,9 +9,9 @@ const balanceRouter = Router();
 balanceRouter.get('/:telegramId', getBalance);
 
 // Маршрут для обновления баланса по telegram_id
-balanceRouter.put('/:telegramId', updateBalance);
+balanceRouter.put('/minus/:telegramId', updateBalance);
 
 // Маршрут для обновления баланса по telegram_id
-balanceRouter.put('/mined/:telegramId', updateBalanceCoins);
+balanceRouter.put('/plus/:telegramId', updateBalanceCoins);
 
 export { balanceRouter };
