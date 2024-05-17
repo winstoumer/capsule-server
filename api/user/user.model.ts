@@ -69,16 +69,25 @@ async function createUser(telegramId: number, firstName: string): Promise<boolea
 
     try {
         await sql.begin(async sql => {
+            // Вставляем данные в таблицу users
             await sql`
                 INSERT INTO users (user_id, telegram_id, first_name, time, time_update, active)
                 VALUES (${userId}, ${telegramId}, ${firstName}, ${currentTime}, ${currentTime}, true)
             `;
 
+            // Вставляем данные в таблицу balance
             await sql`
                 INSERT INTO balance (user_id, telegram_id, balance, time, time_update, active)
-                VALUES (${userId}, ${telegramId}, 50, ${currentTime}, ${currentTime}, true)
+                VALUES (${userId}, ${telegramId}, 100.00, ${currentTime}, ${currentTime}, true)
             `;
 
+            // Вставляем данные в таблицу user_matter
+            await sql`
+                INSERT INTO user_matter (user_id, telegram_id, matter_id, time, time_update, action)
+                VALUES (${userId}, ${telegramId}, 1, ${currentTime}, ${currentTime}, 'default_action')
+            `;
+
+            // Вставляем данные в таблицу current_mining
             await sql`
                 INSERT INTO current_mining (user_id, telegram_id, time, next_time, matter_id)
                 VALUES (${userId}, ${telegramId}, ${currentTime}, ${nextTime}, 1)
