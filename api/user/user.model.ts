@@ -62,7 +62,7 @@ async function getUserInfoByTelegramId(telegramId: number): Promise<any | null> 
     }
 }
 
-async function createUser(telegramId: number, firstName: string): Promise<boolean> {
+async function createUser(telegramId: number, first_name: string): Promise<boolean> {
     const userId = uuidv4(); // Генерация уникального идентификатора
     const currentTime = new Date();
     const nextTime = new Date(currentTime.getTime() + 1 * 60 * 60 * 1000); // Добавляем 1 час к текущему времени
@@ -72,7 +72,7 @@ async function createUser(telegramId: number, firstName: string): Promise<boolea
             // Вставляем данные в таблицу users
             await sql`
                 INSERT INTO users (user_id, telegram_id, first_name, time, time_update, active)
-                VALUES (${userId}, ${telegramId}, ${firstName}, ${currentTime}, ${currentTime}, true)
+                VALUES (${userId}, ${telegramId}, ${first_name}, ${currentTime}, ${currentTime}, true)
             `;
 
             // Вставляем данные в таблицу balance

@@ -51,9 +51,9 @@ async function getUserByTelegramIdWithInfoHandler(req: Request, res: Response): 
 
 async function createUserHandler(req: Request, res: Response): Promise<void> {
   const { telegramId } = req.params; // Получение telegramId из параметров маршрута
-  const { firstName } = req.body; // Получение firstName из тела запроса
+  const { first_name } = req.body; // Получение firstName из тела запроса
 
-  if (!telegramId || !firstName) {
+  if (!telegramId || !first_name) {
     res.status(400).json({ message: 'Необходимо указать telegramId и firstName' });
     return;
   }
@@ -65,7 +65,7 @@ async function createUserHandler(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const userCreated = await createUser(parseInt(telegramId, 10), firstName);
+    const userCreated = await createUser(parseInt(telegramId, 10), first_name);
 
     if (userCreated) {
       res.status(201).json({ message: 'Пользователь успешно создан' });
