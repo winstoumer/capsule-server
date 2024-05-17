@@ -41,7 +41,7 @@ async function updateCurrentMiningByTelegramId(telegramId: number, matter_id: nu
             
                 const nextTime = new Date(currentTime.getTime() + time_mine * 60 * 60 * 1000);
 
-                const timeEndMinedNftValue = time_end_mined_nft ? time_end_mined_nft : null;
+                const timeEndMinedNftValue = time_end_mined_nft ? time_end_mined_nft.toISOString() : null;
             
                 await sql`
                     UPDATE current_mining
