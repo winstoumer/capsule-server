@@ -9,6 +9,8 @@ interface CurrentMiningData {
     time: Date;
     next_time: Date;
     matter_id: number;
+    nft_mined: boolean;
+    time_end_mined_nft: Date;
     matter_data: any;
 }
 
@@ -28,7 +30,7 @@ async function getCurrentMiningByTelegramId(telegramId: number): Promise<Current
 }
 
 // Функция для обновления записи о текущем майнинге
-async function updateCurrentMiningByTelegramId(telegramId: number, matter_id: number): Promise<void> {
+async function updateCurrentMiningByTelegramId(telegramId: number, matter_id: number, nft_mined: boolean, time_end_mined_nft: Date): Promise<void> {
     try {
         const matterTime = await sql<{ time_mine: number }[]>`
                 SELECT time_mine FROM matter WHERE matter_id = ${matter_id}
@@ -44,7 +46,7 @@ async function updateCurrentMiningByTelegramId(telegramId: number, matter_id: nu
                 // Обновляем запись в таблице current_mining
                 await sql`
                     UPDATE current_mining
-                    SET time = NOW(), next_time = ${nextTime}, matter_id = ${matter_id}
+                    SET time = NOW(), next_time = ${nextTime}, matter_id = ${matter_id}, nft_mined = ${nft_mined}, time_end_mined_nft = ${time_end_mined_nft}
                     WHERE telegram_id = ${telegramId}
                 `;
             } else {
