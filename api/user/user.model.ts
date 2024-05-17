@@ -83,8 +83,8 @@ async function createUser(telegramId: number, first_name: string): Promise<boole
 
             // Вставляем данные в таблицу user_matter
             await sql`
-                INSERT INTO user_matter (user_id, telegram_id, matter_id, time, time_update, action)
-                VALUES (${userId}, ${telegramId}, 1, ${currentTime}, ${currentTime}, 'default_action')
+                INSERT INTO user_matter (user_id, telegram_id, matter_id, time, time_update, active)
+                VALUES (${userId}, ${telegramId}, 1, ${currentTime}, ${currentTime}, true)
             `;
 
             // Вставляем данные в таблицу current_mining
