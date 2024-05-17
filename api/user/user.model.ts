@@ -1,6 +1,7 @@
 // user.model.ts
 
 import { sql } from '../database';
+import { v4 as uuidv4 } from 'uuid';
 
 interface User {
     id: number;
@@ -61,4 +62,33 @@ async function getUserInfoByTelegramId(telegramId: number): Promise<any | null> 
     }
 }
 
-export { User, UserWithInfo, getUserByTelegramId, updateUserFirstName, getUserInfoByTelegramId };
+async function createUser(telegramId: number, firstName: string): Promise<boolean> {
+    const userId = uuidv4(); // Генерация уникального идентификатора
+    const currentTime = new Date();
+    const nextTime = new Date(currentTime.getTime() + 1 * 60 * 60 * 1000); // Добавляем 1 час к текущему времени
+
+    try {
+        await sql.begin(async sql => {
+            await sql`
+                INSERT INTO users (user_id, telegram_id, first_name, time, time_update, active)
+                VALUES (${userId}, ${telegramId}, ${firstName}, ${currentTime}, ${currentTime}, true)
+            `;
+
+            await sql`
+                INSERT INTO balance (user_id, telegram_id, balance, time, time_update, active)
+                VALUES (${userId}, ${telegramId}, 50, ${currentTime}, ${currentTime}, true)
+            `;
+
+            await sql`
+                INSERT INTO current_mining (user_id, telegram_id, time, next_time, matter_id)
+                VALUES (${userId}, ${telegramId}, ${currentTime}, ${nextTime}, 1)
+            `;
+        });
+        return true;
+    } catch (error) {
+        console.error('Ошибка при создании пользователя:', error);
+        return false;
+    }
+}
+
+export { User, UserWithInfo, getUserByTelegramId, updateUserFirstName, getUserInfoByTelegramId, createUser };
