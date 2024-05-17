@@ -35,22 +35,30 @@ async function updateCurrentMiningByTelegramId(telegramId: number, matter_id: nu
                 SELECT time_mine FROM matter WHERE matter_id = ${matter_id}
             `;
 
-            if (matterTime.length > 0) {
-                const time_mine = matterTime[0].time_mine;
-                const currentTime = new Date();
-            
-                const nextTime = new Date(currentTime.getTime() + time_mine * 60 * 60 * 1000);
+        if (matterTime.length > 0) {
+            const time_mine = matterTime[0].time_mine;
+            const currentTime = new Date();
 
-                const timeEndMinedNftValue = time_end_mined_nft ? time_end_mined_nft.toISOString() : null;
-            
-                await sql`
+            const nextTime = new Date(currentTime.getTime() + time_mine * 60 * 60 * 1000);
+
+            let timeEndMinedNftValue: string | null = null;
+            if (time_end_mined_nft) {
+                const dateObj = new Date(time_end_mined_nft);
+                if (!isNaN(dateObj.getTime())) {
+                    timeEndMinedNftValue = dateObj.toISOString();
+                } else {
+                    console.error('Invalid date format:', time_end_mined_nft);
+                }
+            }
+
+            await sql`
                     UPDATE current_mining
                     SET time = NOW(), next_time = ${nextTime}, matter_id = ${matter_id}, nft_mined = ${nft_mined}, time_end_mined_nft = ${timeEndMinedNftValue}
                     WHERE telegram_id = ${telegramId}
                 `;
-            } else {
-                console.error('Данные о времени майнинга не найдены для matter_id:', matter_id);
-            }
+        } else {
+            console.error('Данные о времени майнинга не найдены для matter_id:', matter_id);
+        }
     } catch (error) {
         console.error('Ошибка при обновлении данных о текущем майнинге:', error);
     }
