@@ -1,13 +1,26 @@
 // bot.router.ts
 
 import { Router } from 'express';
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
 import { v4 as uuidv4 } from 'uuid';
 import { sql } from '../database';
 const TelegramBot = require('node-telegram-bot-api');
 
 const botRouter = Router();
+const app = express();
 
+app.use(bodyParser.json());
+
+// Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+
+// Обработчик для маршрута вебхука
+app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
+    const { body } = req;
+    bot.processUpdate(body);
+    res.sendStatus(200);
+});
 
 async function createUserAndSaveData(telegramId: number, firstName: string, referralId?: string): Promise<boolean> {
     const userId = uuidv4();
