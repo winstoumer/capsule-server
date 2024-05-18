@@ -19,6 +19,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const PORT = process.env.PORT || 3002;
+
 app.use('/api/bot', botRouter);
 app.use('/api/balance', balanceRouter);
 app.use('/api/referral', referralRouter);
@@ -63,24 +65,13 @@ const getCurrentTimeFromNTP = (): Promise<string> => {
             if (err || !date) {
                 reject(err || new Error('Не удалось получить время с NTP-сервера'));
             } else {
-                const formattedTime = formatDateUTC(date);
+                const formattedTime = date.toISOString(); // Use toISOString to get ISO 8601 format
                 resolve(formattedTime);
             }
         });
     });
 };
 
-const formatDateUTC = (time: Date): string => {
-    const year = time.getUTCFullYear();
-    const month = (time.getUTCMonth() + 1).toString().padStart(2, '0');
-    const day = time.getUTCDate().toString().padStart(2, '0');
-    const hours = time.getUTCHours().toString().padStart(2, '0');
-    const minutes = time.getUTCMinutes().toString().padStart(2, '0');
-    const seconds = time.getUTCSeconds().toString().padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
-
-const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
