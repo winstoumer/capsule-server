@@ -1,6 +1,16 @@
 // src/controllers/collections.controller.ts
 import { Request, Response } from 'express';
-import { getCollectionById } from './collections.model';
+import { getActiveCollections, getCollectionById } from './collections.model';
+
+async function getActiveCollectionsHandler(req: Request, res: Response): Promise<void> {
+    try {
+      const collections = await getActiveCollections();
+      res.json(collections);
+    } catch (error) {
+      console.error('Ошибка при получении активных коллекций:', error);
+      res.status(500).json({ message: 'Произошла ошибка при получении активных коллекций' });
+    }
+  }
 
 async function getCollectionByIdHandler(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
@@ -17,4 +27,4 @@ async function getCollectionByIdHandler(req: Request, res: Response): Promise<vo
   }
 }
 
-export { getCollectionByIdHandler };
+export { getActiveCollectionsHandler, getCollectionByIdHandler };

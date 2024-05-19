@@ -12,6 +12,12 @@ interface CollectionData {
     active: boolean;
 }
 
+async function getActiveCollections(): Promise<CollectionData[]> {
+    return await sql<CollectionData[]>`
+      SELECT * FROM nft_collections WHERE active = true
+    `;
+  }
+
 async function getCollectionById(id: number): Promise<CollectionData | null> {
     const result = await sql<CollectionData[]>`
       SELECT * FROM nft_collections WHERE id = ${id} AND active = true
@@ -19,4 +25,4 @@ async function getCollectionById(id: number): Promise<CollectionData | null> {
     return result[0] || null;
 }
 
-export { getCollectionById, CollectionData };
+export { getActiveCollections, getCollectionById, CollectionData };
