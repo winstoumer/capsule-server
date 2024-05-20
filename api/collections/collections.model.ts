@@ -10,6 +10,7 @@ interface CollectionData {
     banner_url?: string;
     date: Date;
     active: boolean;
+    nft_left: number;
 }
 
 async function getActiveCollections(): Promise<CollectionData[]> {
