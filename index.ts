@@ -12,6 +12,7 @@ import { taskRouter } from './api/task';
 import { matterRouter } from './api/matter';
 import { currentMiningRouter } from './api/currentMining';
 import { collectionsRouter } from './api/collections';
+import { mintRouter } from './api/mint';
 
 import * as express from 'express';
 
@@ -30,6 +31,7 @@ app.use('/api/task', taskRouter);
 app.use('/api/matter', matterRouter);
 app.use('/api/currentMining', currentMiningRouter);
 app.use('/api/collections', collectionsRouter);
+app.use('/api/mint', mintRouter);
 
 app.get('/api/ton-json/tonconnect-manifest.json', async (req, res) => {
     try {
