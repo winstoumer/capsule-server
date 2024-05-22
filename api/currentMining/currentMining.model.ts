@@ -36,25 +36,39 @@ async function updateCurrentMiningByTelegramId(telegramId: number, matter_id: nu
                 SELECT time_mine FROM matter WHERE matter_id = ${matter_id}
             `;
 
-            if (matterTime.length > 0) {
-                const time_mine = matterTime[0].time_mine;
-                const currentTime = new Date();
-            
-                const nextTime = new Date(currentTime.getTime() + time_mine * 60 * 60 * 1000);
+        if (matterTime.length > 0) {
+            const time_mine = matterTime[0].time_mine;
+            const currentTime = new Date();
 
-                const timeEndMinedNftValue = time_end_mined_nft ? time_end_mined_nft : null;
-            
-                await sql`
+            const nextTime = new Date(currentTime.getTime() + time_mine * 60 * 60 * 1000);
+
+            const timeEndMinedNftValue = time_end_mined_nft ? time_end_mined_nft : null;
+
+            await sql`
                     UPDATE current_mining
                     SET time = NOW(), next_time = ${nextTime}, matter_id = ${matter_id}, nft_mined = ${nft_mined}, time_end_mined_nft = ${timeEndMinedNftValue}, mint_active = ${mint_active}
                     WHERE telegram_id = ${telegramId}
                 `;
-            } else {
-                console.error('Данные о времени майнинга не найдены для matter_id:', matter_id);
-            }
+        } else {
+            console.error('Данные о времени майнинга не найдены для matter_id:', matter_id);
+        }
     } catch (error) {
         console.error('Ошибка при обновлении данных о текущем майнинге:', error);
     }
 }
 
-export { getCurrentMiningByTelegramId, updateCurrentMiningByTelegramId };
+async function nftMinted(telegramId: number): Promise<void> {
+    try {
+        const timeEndMinedNftValue = null;
+        const mintActive = false;
+        await sql`
+                    UPDATE current_mining
+                    SET time_end_mined_nft = ${timeEndMinedNftValue}, mint_active = ${mintActive}
+                    WHERE telegram_id = ${telegramId}
+                `;
+    } catch (error) {
+        console.error('Ошибка при обновлении данных о текущем майнинге:', error);
+    }
+}
+
+export { getCurrentMiningByTelegramId, updateCurrentMiningByTelegramId, nftMinted };

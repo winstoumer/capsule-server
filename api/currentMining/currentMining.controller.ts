@@ -1,7 +1,7 @@
 // currentMining.controller.ts
 
 import { Request, Response } from 'express';
-import { getCurrentMiningByTelegramId, updateCurrentMiningByTelegramId } from './currentMining.model';
+import { getCurrentMiningByTelegramId, updateCurrentMiningByTelegramId, nftMinted } from './currentMining.model';
 
 async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response): Promise<void> {
     const { telegramId } = req.params;
@@ -31,4 +31,16 @@ async function updateCurrentMiningByTelegramIdHandler(req: Request, res: Respons
     }
 }
 
-export { getCurrentMiningByTelegramIdHandler, updateCurrentMiningByTelegramIdHandler };
+async function nftMintedHandler(req: Request, res: Response): Promise<void> {
+    const { telegramId } = req.params;
+
+    try {
+        await nftMinted(parseInt(telegramId, 10));
+        res.json({ message: 'Данные о текущем майнинге успешно обновлены' });
+    } catch (error) {
+        console.error('Ошибка при обновлении данных о текущем майнинге:', error);
+        res.status(500).json({ message: 'Произошла ошибка при обновлении данных о текущем майнинге' });
+    }
+}
+
+export { getCurrentMiningByTelegramIdHandler, updateCurrentMiningByTelegramIdHandler, nftMintedHandler };
