@@ -18,7 +18,19 @@ import * as express from 'express';
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = ['https://capsule-server.onrender.com'];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (allowedOrigins.indexOf(origin as string) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const PORT = process.env.PORT || 3002;
