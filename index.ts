@@ -19,9 +19,8 @@ import * as express from 'express';
 
 const app = express();
 
-// const allowedOrigins = ['https://capsule-server.onrender.com'];
+const allowedOrigins = ['https://capsule09876.netlify.app'];
 
-/*
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (allowedOrigins.indexOf(origin as string) !== -1 || !origin) {
@@ -31,9 +30,8 @@ const corsOptions: cors.CorsOptions = {
     }
   }
 };
-*/
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(bodyParser.json());
 
