@@ -92,12 +92,12 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
         } else {
             await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
                 reply_markup: {
-                    inline_keyboard: [[{ text: 'Open app', url: 'https://t.me/bigmatter_bot/app' }]]
+                    inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
                 }
             });
         }
     } catch (error) {
-        console.error('Ошибка при обработке команды /start:', error);
+        console.error('Error /start:', error);
         await bot.sendMessage(chatId, `Try it later`);
     }
 });
@@ -108,7 +108,7 @@ botRouter.post('/sendReferralMessage', async (req: any, res: any) => {
     try {
         await bot.sendMessage(telegramUserId, `Your referral link: https://t.me/bigmatter_bot?start=r_${telegramUserId}`, {
             reply_markup: {
-                inline_keyboard: [[{ text: 'Open app', url: 'https://t.me/bigmatter_bot/app' }]]
+                inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
             }
         });
         res.sendStatus(200);

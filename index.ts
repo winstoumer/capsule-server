@@ -50,7 +50,6 @@ app.use('/api/mint', mintRouter);
 app.get('/api/ton-json/tonconnect-manifest.json', async (req, res) => {
     try {
       const data = await fetchData();
-
       res.json(data);
     } catch (error) {
       res.status(500).json({ error });
@@ -60,8 +59,8 @@ app.get('/api/ton-json/tonconnect-manifest.json', async (req, res) => {
   async function fetchData() {
     return {
       "url": "https://capsule09876.netlify.app",
-      "name": "Capsule",
-      "iconUrl": "https://i.ibb.co/kqdtY34/Untitled.png",
+      "name": "BigMatter",
+      "iconUrl": "https://i.ibb.co/Bj5nV7t/Untitled.png",
       "termsOfUseUrl": "https://capsule09876.netlify.app",
       "privacyPolicyUrl": "https://capsule09876.netlify.app"
     };
@@ -69,11 +68,11 @@ app.get('/api/ton-json/tonconnect-manifest.json', async (req, res) => {
 
 app.get('/api/currentTime', async (req, res) => {
     try {
-        const currentTime = await getCurrentTimeFromNTP(); // Получаем текущее время с NTP-сервера
+        const currentTime = await getCurrentTimeFromNTP();
         res.json({ currentTime });
     } catch (error) {
-        console.error('Ошибка получения времени с NTP-сервера:', error);
-        res.status(500).json({ error: 'Ошибка получения времени с NTP-сервера' });
+        console.error('Error NTP:', error);
+        res.status(500).json({ error: 'Error NTP' });
     }
 });
 
@@ -81,9 +80,9 @@ const getCurrentTimeFromNTP = (): Promise<string> => {
     return new Promise((resolve, reject) => {
         ntpClient.getNetworkTime("pool.ntp.org", 123, (err: string | Error | null, date: Date | null) => {
             if (err || !date) {
-                reject(err || new Error('Не удалось получить время с NTP-сервера'));
+                reject(err || new Error('Error NTP time'));
             } else {
-                const formattedTime = date.toISOString(); // Use toISOString to get ISO 8601 format
+                const formattedTime = date.toISOString();
                 resolve(formattedTime);
             }
         });
