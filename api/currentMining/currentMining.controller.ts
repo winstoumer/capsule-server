@@ -4,6 +4,10 @@ import { Request, Response } from 'express';
 import { getCurrentMiningByTelegramId, updateCurrentMiningByTelegramId, nftMinted } from './currentMining.model';
 import { AES, enc } from 'crypto-js';
 
+interface EncryptedData {
+    [key: string]: string;
+}
+
 const secretKey = process.env.SECRET_KEY;
 
 if (!secretKey) {
@@ -29,18 +33,26 @@ async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response):
         const miningData = await getCurrentMiningByTelegramId(telegramId);
         if (miningData) {
             // Encrypt the response data before sending it back
-            const encryptedData = {
-                level: AES.encrypt(miningData.level.toString(), secretKey).toString(),
-                image_url: AES.encrypt(miningData.image_url, secretKey).toString(),
-                next_time: AES.encrypt(miningData.next_time.toISOString(), secretKey).toString(),
-                coins_mine: AES.encrypt(miningData.coins_mine.toString(), secretKey).toString(),
-                time_mine: AES.encrypt(miningData.time_mine.toString(), secretKey).toString(),
-                matter_id: AES.encrypt(miningData.matter_id.toString(), secretKey).toString(),
-                time_end_mined_nft: AES.encrypt(miningData.time_end_mined_nft.toISOString(), secretKey).toString(),
-                nft_mined: AES.encrypt(miningData.nft_mined.toString(), secretKey).toString(),
-                mint_active: AES.encrypt(miningData.mint_active.toString(), secretKey).toString(),
-                nft_active: AES.encrypt(miningData.nft_active.toString(), secretKey).toString()
+            const encryptedData: EncryptedData = {
+                level: AES.encrypt('level', secretKey).toString(),
+                image_url: AES.encrypt('image_url', secretKey).toString(),
+                next_time: AES.encrypt('next_time', secretKey).toString(),
+                coins_mine: AES.encrypt('coins_mine', secretKey).toString(),
+                time_mine: AES.encrypt('time_mine', secretKey).toString(),
+                matter_id: AES.encrypt('matter_id', secretKey).toString(),
+                time_end_mined_nft: AES.encrypt('time_end_mined_nft', secretKey).toString(),
+                nft_mined: AES.encrypt('nft_mined', secretKey).toString(),
+                mint_active: AES.encrypt('mint_active', secretKey).toString(),
+                nft_active: AES.encrypt('nft_active', secretKey).toString()
             };
+
+            for (const key in miningData) {
+                if (miningData.hasOwnProperty(key)) {
+                    const value = miningData[key];
+                    encryptedData[AES.encrypt(key, secretKey).toString()] = AES.encrypt(value.toString(), secretKey).toString();
+                }
+            }
+
             res.json(encryptedData);
         } else {
             res.status(404).json({ message: 'Данные о текущем майнинге не найдены' });
@@ -50,6 +62,7 @@ async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response):
         res.status(500).json({ message: 'Произошла ошибка при получении данных о текущем майнинге' });
     }
 }
+
 
 async function updateCurrentMiningByTelegramIdHandler(req: Request, res: Response): Promise<void> {
     const { telegramId } = req.params;
