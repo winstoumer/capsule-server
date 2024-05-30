@@ -5,7 +5,7 @@ import { getCurrentMiningByTelegramIdHandler, updateCurrentMiningByTelegramIdHan
 
 const currentMiningRouter = Router();
 
-currentMiningRouter.get('/current/:telegramId', getCurrentMiningByTelegramIdHandler);
+currentMiningRouter.get('/current', getCurrentMiningByTelegramIdHandler);
 currentMiningRouter.put('/update/:telegramId', updateCurrentMiningByTelegramIdHandler);
 currentMiningRouter.put('/minted/:telegramId', nftMintedHandler);
 

@@ -6,7 +6,7 @@ import { getBalance, updateBalance, updateBalanceCoins } from './balance.control
 const balanceRouter = Router();
 
 // Маршрут для получения баланса по telegram_id
-balanceRouter.get('/:telegramId', getBalance);
+balanceRouter.get('/', getBalance);
 
 // Маршрут для обновления баланса по telegram_id
 balanceRouter.put('/minus/:telegramId', updateBalance);
