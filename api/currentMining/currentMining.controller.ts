@@ -36,7 +36,7 @@ async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response):
                 coins_mine: AES.encrypt(miningData.coins_mine.toString(), secretKey).toString(),
                 time_mine: AES.encrypt(miningData.time_mine.toString(), secretKey).toString(),
                 matter_id: AES.encrypt(miningData.matter_id.toString(), secretKey).toString(),
-                time_end_mined_nft: AES.encrypt(miningData.time_end_mined_nft.toISOString(), secretKey).toString(),
+                time_end_mined_nft: miningData.time_end_mined_nft ? AES.encrypt(miningData.time_end_mined_nft.toISOString(), secretKey).toString() : null,
                 nft_mined: AES.encrypt(miningData.nft_mined.toString(), secretKey).toString(),
                 mint_active: AES.encrypt(miningData.mint_active.toString(), secretKey).toString(),
                 nft_active: AES.encrypt(miningData.nft_active.toString(), secretKey).toString()
