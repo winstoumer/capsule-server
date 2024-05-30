@@ -4,10 +4,6 @@ import { Request, Response } from 'express';
 import { getCurrentMiningByTelegramId, updateCurrentMiningByTelegramId, nftMinted } from './currentMining.model';
 import { AES, enc } from 'crypto-js';
 
-interface EncryptedData {
-    [key: string]: string;
-}
-
 const secretKey = process.env.SECRET_KEY;
 
 if (!secretKey) {
@@ -33,23 +29,15 @@ async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response):
         const miningData = await getCurrentMiningByTelegramId(telegramId);
         if (miningData) {
             // Encrypt the response data before sending it back
-            const encryptedData: EncryptedData = {
-                level: AES.encrypt('level', secretKey).toString(),
-                image_url: AES.encrypt('image_url', secretKey).toString(),
-                next_time: AES.encrypt('next_time', secretKey).toString(),
-                coins_mine: AES.encrypt('coins_mine', secretKey).toString(),
-                time_mine: AES.encrypt('time_mine', secretKey).toString(),
-                matter_id: AES.encrypt('matter_id', secretKey).toString(),
-                time_end_mined_nft: AES.encrypt('time_end_mined_nft', secretKey).toString(),
-                nft_mined: AES.encrypt('nft_mined', secretKey).toString(),
-                mint_active: AES.encrypt('mint_active', secretKey).toString(),
-                nft_active: AES.encrypt('nft_active', secretKey).toString()
-            };
+            const encryptedData: Record<string, string | number | boolean | Date> = {};
 
-            for (const key in miningData) {
-                if (miningData.hasOwnProperty(key)) {
-                    const value = miningData[key];
-                    encryptedData[AES.encrypt(key, secretKey).toString()] = AES.encrypt(value.toString(), secretKey).toString();
+            for (const [key, value] of Object.entries(miningData)) {
+                if (typeof value === 'number' || typeof value === 'boolean' || value instanceof Date) {
+                    encryptedData[AES.encrypt(key, secretKey).toString()] = value;
+                } else {
+                    const encryptedKey = AES.encrypt(key, secretKey).toString();
+                    const encryptedValue = AES.encrypt(value.toString(), secretKey).toString();
+                    encryptedData[encryptedKey] = encryptedValue;
                 }
             }
 
