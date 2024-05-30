@@ -2,10 +2,30 @@
 
 import { Request, Response } from 'express';
 import { getCurrentMiningByTelegramId, updateCurrentMiningByTelegramId, nftMinted } from './currentMining.model';
+import { AES, enc } from 'crypto-js';
+
+const secretKey = process.env.SECRET_KEY;
+
+if (!secretKey) {
+    throw new Error('SECRET_KEY is not defined in the environment variables');
+}
 
 async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response): Promise<void> {
-    const { telegramId } = req.params;
+    const encryptedTelegramId = req.query.data as string;
     try {
+        if (!encryptedTelegramId) {
+            res.status(400).json({ message: 'No encrypted data provided' });
+            return;
+        }
+
+        if (!secretKey) {
+            res.status(500).json({ message: 'Secret key is not defined' });
+            return;
+        }
+
+        const bytes = AES.decrypt(encryptedTelegramId, secretKey);
+        const telegramId = bytes.toString(enc.Utf8);
+
         const miningData = await getCurrentMiningByTelegramId(parseInt(telegramId, 10));
         if (miningData) {
             res.json(miningData);
