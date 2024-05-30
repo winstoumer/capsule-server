@@ -12,30 +12,30 @@ if (!secretKey) {
 
 // Обработчик для получения баланса по telegram_id
 async function getBalance(req: Request, res: Response): Promise<void> {
-  const { telegramId } = req.params;
+  const { data } = req.query;
   try {
-    if (!telegramId) {
-      res.status(400).json({ message: 'No encrypted data provided' });
-      return;
-    }
+      if (!data) {
+          res.status(400).json({ message: 'No encrypted data provided' });
+          return;
+      }
 
-    if (!secretKey) {
-      res.status(500).json({ message: 'Secret key is not defined' });
-      return;
-    }
+      if (!secretKey) {
+        res.status(500).json({ message: 'Secret key is not defined' });
+        return;
+      }
 
-    const bytes = AES.decrypt(telegramId, secretKey);
-    const decryptedTelegramId = bytes.toString(enc.Utf8);
+      const bytes = AES.decrypt(data.toString(), secretKey);
+      const decryptedData = bytes.toString(enc.Utf8);
 
-    const balance = await getBalanceByTelegramId(Number(decryptedTelegramId));
-    if (balance !== null) {
-      res.json({ balance });
-    } else {
-      res.status(404).json({ message: 'Баланс не найден' });
-    }
+      const balance = await getBalanceByTelegramId(Number(decryptedData));
+      if (balance !== null) {
+          res.json({ balance });
+      } else {
+          res.status(404).json({ message: 'Баланс не найден' });
+      }
   } catch (error) {
-    console.error('Ошибка при получении баланса:', error);
-    res.status(500).json({ message: 'Ошибка сервера' });
+      console.error('Ошибка при получении баланса:', error);
+      res.status(500).json({ message: 'Ошибка сервера' });
   }
 }
 
