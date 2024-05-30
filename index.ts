@@ -58,11 +58,11 @@ app.get('/api/ton-json/tonconnect-manifest.json', async (req, res) => {
   
   async function fetchData() {
     return {
-      "url": "https://capsule09876.netlify.app",
+      "url": "BigMatter",
       "name": "BigMatter",
       "iconUrl": "https://i.ibb.co/Bj5nV7t/Untitled.png",
-      "termsOfUseUrl": "https://capsule09876.netlify.app",
-      "privacyPolicyUrl": "https://capsule09876.netlify.app"
+      "termsOfUseUrl": "BigMatter",
+      "privacyPolicyUrl": "BigMatter"
     };
   }
 
