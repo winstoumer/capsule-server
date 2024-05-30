@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import * as ntpClient from 'ntp-client';
+import * as bodyParser from 'body-parser';
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3002;
 
