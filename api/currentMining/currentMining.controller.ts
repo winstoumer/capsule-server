@@ -11,9 +11,9 @@ if (!secretKey) {
 }
 
 async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response): Promise<void> {
-    const encryptedTelegramId = req.query.data as string;
+    const { data } = req.query;
     try {
-        if (!encryptedTelegramId) {
+        if (!data) {
             res.status(400).json({ message: 'No encrypted data provided' });
             return;
         }
@@ -23,12 +23,25 @@ async function getCurrentMiningByTelegramIdHandler(req: Request, res: Response):
             return;
         }
 
-        const bytes = AES.decrypt(encryptedTelegramId, secretKey);
-        const telegramId = bytes.toString(enc.Utf8);
+        const bytes = AES.decrypt(data.toString(), secretKey);
+        const telegramId = parseInt(bytes.toString(enc.Utf8), 10);
 
-        const miningData = await getCurrentMiningByTelegramId(parseInt(telegramId, 10));
+        const miningData = await getCurrentMiningByTelegramId(telegramId);
         if (miningData) {
-            res.json(miningData);
+            // Encrypt the response data before sending it back
+            const encryptedData = {
+                level: AES.encrypt(miningData.level.toString(), secretKey).toString(),
+                image_url: AES.encrypt(miningData.image_url, secretKey).toString(),
+                next_time: AES.encrypt(miningData.next_time.toISOString(), secretKey).toString(),
+                coins_mine: AES.encrypt(miningData.coins_mine.toString(), secretKey).toString(),
+                time_mine: AES.encrypt(miningData.time_mine.toString(), secretKey).toString(),
+                matter_id: AES.encrypt(miningData.matter_id.toString(), secretKey).toString(),
+                time_end_mined_nft: AES.encrypt(miningData.time_end_mined_nft.toISOString(), secretKey).toString(),
+                nft_mined: AES.encrypt(miningData.nft_mined.toString(), secretKey).toString(),
+                mint_active: AES.encrypt(miningData.mint_active.toString(), secretKey).toString(),
+                nft_active: AES.encrypt(miningData.nft_active.toString(), secretKey).toString()
+            };
+            res.json(encryptedData);
         } else {
             res.status(404).json({ message: 'Данные о текущем майнинге не найдены' });
         }

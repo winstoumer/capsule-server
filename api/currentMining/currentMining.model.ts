@@ -13,6 +13,11 @@ interface CurrentMiningData {
     time_end_mined_nft: Date;
     mint_active: boolean;
     matter_data: any;
+    level: number;
+    image_url: string;
+    coins_mine: number;
+    time_mine: number;
+    nft_active: boolean;
 }
 
 async function getCurrentMiningByTelegramId(telegramId: number): Promise<CurrentMiningData | null> {
