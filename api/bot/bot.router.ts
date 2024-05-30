@@ -63,7 +63,7 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
         });
         return true;
     } catch (error) {
-        console.error('Ошибка при создании пользователя:', error);
+        console.error('Error:', error);
         return false;
     }
 }
@@ -72,7 +72,7 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
     const chatId = msg.chat.id;
     const telegramId = msg.from.id;
     const firstName = msg.from.first_name;
-    const referralId = match[1]; // Если есть реферальный ID
+    const referralId = match[1];
 
     try {
         const userExists = await sql`
@@ -81,16 +81,24 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
         if (userExists.length === 0) {
             const userCreated = await createUserAndSaveData(telegramId, firstName, referralId);
             if (userCreated) {
-                await bot.sendMessage(chatId, `Добро пожаловать, ${firstName}! Ваш аккаунт успешно создан.`);
+                await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
+                    reply_markup: {
+                        inline_keyboard: [[{ text: 'Open app', url: 'https://t.me/bigmatter_bot/app' }]]
+                    }
+                });
             } else {
-                await bot.sendMessage(chatId, `Произошла ошибка при создании вашего аккаунта. Попробуйте позже.`);
+                await bot.sendMessage(chatId, `Try it later`);
             }
         } else {
-            await bot.sendMessage(chatId, `Добро пожаловать обратно, ${firstName}!`);
+            await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
+                reply_markup: {
+                    inline_keyboard: [[{ text: 'Open app', url: 'https://t.me/bigmatter_bot/app' }]]
+                }
+            });
         }
     } catch (error) {
         console.error('Ошибка при обработке команды /start:', error);
-        await bot.sendMessage(chatId, `Произошла ошибка. Попробуйте позже.`);
+        await bot.sendMessage(chatId, `Try it later`);
     }
 });
 
@@ -98,12 +106,17 @@ botRouter.post('/sendReferralMessage', async (req: any, res: any) => {
     const { telegramUserId } = req.body;
 
     try {
-        await bot.sendMessage(telegramUserId, `Your referral link: https://t.me/gbaswebtest_bot?start=r_${telegramUserId}`);
+        await bot.sendMessage(telegramUserId, `Your referral link: https://t.me/bigmatter_bot?start=r_${telegramUserId}`, {
+            reply_markup: {
+                inline_keyboard: [[{ text: 'Open app', url: 'https://t.me/bigmatter_bot/app' }]]
+            }
+        });
         res.sendStatus(200);
     } catch (error) {
         console.error(error);
-        res.status(500).send('Ошибка отправки сообщения');
+        res.status(500).send('Error');
     }
 });
+
 
 export { botRouter };
