@@ -59,6 +59,13 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
                     INSERT INTO referral (invited_id, invited_by_id, invited_telegram_id, invited_by_telegram_id, time, active)
                     VALUES (${userId}, null, ${telegramId}, ${referralId}, ${currentTime}, true)
                 `;
+
+                // Обновляем баланс пригласившего пользователя
+                await sql`
+                    UPDATE balance
+                    SET balance = balance + 50.00, time_update = ${currentTime}
+                    WHERE telegram_id = ${referralId}
+                `;
             }
         });
         return true;
