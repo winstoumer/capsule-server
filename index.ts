@@ -35,7 +35,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(bodyParser.json());
 
-const PORT = process.env.DATABASE_PORT || 3002;
+const PORT = process.env.PORT || 3002;
 
 app.use('/api/bot', botRouter);
 app.use('/api/balance', balanceRouter);
