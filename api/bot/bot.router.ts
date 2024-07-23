@@ -6,6 +6,7 @@ import * as bodyParser from 'body-parser';
 import { v4 as uuidv4 } from 'uuid';
 import { sql } from '../database';
 const TelegramBot = require('node-telegram-bot-api');
+import * as schedule from 'node-schedule';
 
 const botRouter = Router();
 const app = express();
@@ -21,6 +22,30 @@ app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
     bot.processUpdate(body);
     res.sendStatus(200);
 });
+
+// Хранение идентификаторов пользователей
+const userIds: Set<number> = new Set<number>();
+
+// Определите расписание времени открытия и закрытия портала
+const portalIntervals = [
+    { open: { hour: 1, minute: 0 }, close: { hour: 6, minute: 0 } },
+    { open: { hour: 6, minute: 0 }, close: { hour: 12, minute: 0 } },
+    { open: { hour: 12, minute: 0 }, close: { hour: 18, minute: 0 } },
+    { open: { hour: 18, minute: 0 }, close: { hour: 1, minute: 0 } }
+];
+
+// Функция для отправки сообщения всем пользователям
+const notifyUsers = (message: string) => {
+    userIds.forEach(userId => {
+        bot.sendMessage(userId, message).catch((error: unknown) => {
+            if (error instanceof Error) {
+                console.error(`Failed to send message to user ${userId}: ${error.message}`);
+            } else {
+                console.error(`Failed to send message to user ${userId}: ${error}`);
+            }
+        });
+    });
+};
 
 async function createUserAndSaveData(telegramId: number, firstName: string, referralId?: string): Promise<boolean> {
     const userId = uuidv4();
@@ -125,5 +150,23 @@ botRouter.post('/sendReferralMessage', async (req: any, res: any) => {
         res.status(500).send('Error');
     }
 });
+
+// Функция для планирования уведомлений
+const schedulePortalNotifications = () => {
+    portalIntervals.forEach(interval => {
+        // Планирование уведомления об открытии портала
+        schedule.scheduleJob({ hour: interval.open.hour, minute: interval.open.minute, second: 0 }, () => {
+            notifyUsers('The portal is now OPEN.');
+        });
+
+        // Планирование уведомления о закрытии портала
+        schedule.scheduleJob({ hour: interval.close.hour, minute: interval.close.minute, second: 0 }, () => {
+            notifyUsers('The portal is now CLOSED.');
+        });
+    });
+};
+
+// Запуск планировщика уведомлений
+schedulePortalNotifications();
 
 export { botRouter };
