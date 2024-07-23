@@ -106,6 +106,7 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
     const telegramId = msg.from.id;
     const firstName = msg.from.first_name;
     const referralId = match[1];
+    userIds.add(chatId);
 
     try {
         const userExists = await sql`
