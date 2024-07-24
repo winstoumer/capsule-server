@@ -161,10 +161,23 @@ const schedulePortalNotifications = () => {
     portalIntervals.forEach(interval => {
         const { open, close } = interval;
 
-        const openDuration = ((close.hour * 60 + close.minute) - (open.hour * 60 + open.minute)) / 60; // Время работы в часах
+        // Вычисляем общее количество минут, в течение которых портал открыт
+        const totalMinutesOpen = (close.hour * 60 + close.minute) - (open.hour * 60 + open.minute);
+        const hours = Math.floor(totalMinutesOpen / 60);
+        const minutes = totalMinutesOpen % 60;
+
+        // Формируем строку с продолжительностью работы портала
+        let durationMessage = '';
+        if (hours > 0) {
+            durationMessage += `${hours} hour${hours > 1 ? 's' : ''}`;
+        }
+        if (minutes > 0) {
+            if (hours > 0) durationMessage += ' and ';
+            durationMessage += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+        }
 
         schedule.scheduleJob({ hour: open.hour, minute: open.minute, second: 0 }, () => {
-            notifyUsers(`The portal is now OPEN for ${openDuration} hours.`);
+            notifyUsers(`The portal is now OPEN for ${durationMessage}.`);
         });
 
         schedule.scheduleJob({ hour: close.hour, minute: close.minute, second: 0 }, () => {
@@ -172,6 +185,9 @@ const schedulePortalNotifications = () => {
         });
     });
 };
+
+// Запуск функции планирования уведомлений
+schedulePortalNotifications();
 
 // Запуск планировщика уведомлений
 schedulePortalNotifications();
