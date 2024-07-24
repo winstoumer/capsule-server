@@ -28,16 +28,20 @@ const userIds: Set<number> = new Set<number>();
 
 // Определите расписание времени открытия и закрытия портала
 const portalIntervals = [
-    { open: { hour: 1, minute: 0 }, close: { hour: 6, minute: 0 } },
-    { open: { hour: 6, minute: 0 }, close: { hour: 12, minute: 0 } },
-    { open: { hour: 12, minute: 0 }, close: { hour: 18, minute: 0 } },
-    { open: { hour: 18, minute: 0 }, close: { hour: 1, minute: 0 } }
+    { open: { hour: 10, minute: 30 }, close: { hour: 11, minute: 0 } },
+    { open: { hour: 6, minute: 0 }, close: { hour: 6, minute: 30 } },
+    { open: { hour: 16, minute: 0 }, close: { hour: 16, minute: 30 } },
+    { open: { hour: 22, minute: 0 }, close: { hour: 22, minute: 30 } }
 ];
 
 // Функция для отправки сообщения всем пользователям
 const notifyUsers = (message: string) => {
     userIds.forEach(userId => {
-        bot.sendMessage(userId, message).catch((error: unknown) => {
+        bot.sendMessage(userId, message, {
+            reply_markup: {
+                inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
+            }
+        }).catch((error: unknown) => {
             if (error instanceof Error) {
                 console.error(`Failed to send message to user ${userId}: ${error.message}`);
             } else {
@@ -117,7 +121,7 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
             if (userCreated) {
                 await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
                     reply_markup: {
-                        inline_keyboard: [[{ text: 'Open app', url: 'https://t.me/bigmatter_bot/app' }]]
+                        inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
                     }
                 });
             } else {
@@ -155,13 +159,15 @@ botRouter.post('/sendReferralMessage', async (req: any, res: any) => {
 // Функция для планирования уведомлений
 const schedulePortalNotifications = () => {
     portalIntervals.forEach(interval => {
-        // Планирование уведомления об открытии портала
-        schedule.scheduleJob({ hour: interval.open.hour, minute: interval.open.minute, second: 0 }, () => {
-            notifyUsers('The portal is now OPEN.');
+        const { open, close } = interval;
+
+        const openDuration = ((close.hour * 60 + close.minute) - (open.hour * 60 + open.minute)) / 60; // Время работы в часах
+
+        schedule.scheduleJob({ hour: open.hour, minute: open.minute, second: 0 }, () => {
+            notifyUsers(`The portal is now OPEN for ${openDuration} hours.`);
         });
 
-        // Планирование уведомления о закрытии портала
-        schedule.scheduleJob({ hour: interval.close.hour, minute: interval.close.minute, second: 0 }, () => {
+        schedule.scheduleJob({ hour: close.hour, minute: close.minute, second: 0 }, () => {
             notifyUsers('The portal is now CLOSED.');
         });
     });
