@@ -92,7 +92,7 @@ const getCurrentTimeFromNTP = (): Promise<string> => {
 // Portal
 const portalIntervals = [
   { open: { hour: 10, minute: 30 }, close: { hour: 11, minute: 0 } },
-  { open: { hour: 6, minute: 0 }, close: { hour: 6, minute: 30 } },
+  { open: { hour: 11, minute: 0 }, close: { hour: 16, minute: 30 } },
   { open: { hour: 16, minute: 0 }, close: { hour: 16, minute: 30 } },
   { open: { hour: 22, minute: 0 }, close: { hour: 22, minute: 30 } }
 ];
