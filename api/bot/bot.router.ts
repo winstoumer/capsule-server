@@ -93,7 +93,7 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
                 // Обновляем баланс пригласившего пользователя
                 await sql`
                     UPDATE balance
-                    SET balance = balance + 50.00, time_update = ${currentTime}
+                    SET balance = balance + 500.00, time_update = ${currentTime}
                     WHERE telegram_id = ${referralId}
                 `;
             }
