@@ -55,7 +55,7 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
     const userId = uuidv4();
     const currentTime = new Date();
     const nextTime = new Date(currentTime.getTime() + 1 * 60 * 60 * 1000);
-    const initialBalance = referralId ? 150.00 : 50.00;
+    const initialBalance = referralId ? 550.00 : 50.00;
 
     try {
         await sql.begin(async sql => {
