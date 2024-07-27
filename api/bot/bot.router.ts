@@ -191,7 +191,4 @@ const schedulePortalNotifications = () => {
 // Запуск функции планирования уведомлений
 schedulePortalNotifications();
 
-// Запуск планировщика уведомлений
-schedulePortalNotifications();
-
 export { botRouter };
