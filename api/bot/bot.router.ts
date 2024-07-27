@@ -112,32 +112,64 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
     const referralId = match[1];
     userIds.add(chatId);
 
+    console.log(`Received /start command from user ${telegramId}, referralId: ${referralId}`);
+
     try {
         const userExists = await sql`
             SELECT 1 FROM users WHERE telegram_id = ${telegramId}
         `;
+        console.log(`User exists check for ${telegramId}:`, userExists.length);
+
         if (userExists.length === 0) {
             console.log(`User with telegram_id ${telegramId} does not exist. Creating new user...`);
             const userCreated = await createUserAndSaveData(telegramId, firstName, referralId);
+            console.log(`User created status for ${telegramId}:`, userCreated);
+
             if (userCreated) {
+                try {
+                    await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
+                        reply_markup: {
+                            inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
+                        }
+                    });
+                } catch (sendMessageError) {
+                    console.error(`Failed to send welcome message to ${chatId}:`, sendMessageError);
+                    try {
+                        await bot.sendMessage(chatId, `An error occurred while sending your welcome message. Please try again later.`);
+                    } catch (finalError) {
+                        console.error(`Failed to send error message to ${chatId}:`, finalError);
+                    }
+                }
+            } else {
+                try {
+                    await bot.sendMessage(chatId, `An error occurred while creating your account. Please try again later.`);
+                } catch (sendMessageError) {
+                    console.error(`Failed to send account creation error message to ${chatId}:`, sendMessageError);
+                }
+            }
+        } else {
+            try {
                 await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
                     reply_markup: {
                         inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
                     }
                 });
-            } else {
-                await bot.sendMessage(chatId, `Try it later`);
-            }
-        } else {
-            await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
-                reply_markup: {
-                    inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
+            } catch (sendMessageError) {
+                console.error(`Failed to send message to ${chatId}:`, sendMessageError);
+                try {
+                    await bot.sendMessage(chatId, `An error occurred while sending your message. Please try again later.`);
+                } catch (finalError) {
+                    console.error(`Failed to send error message to ${chatId}:`, finalError);
                 }
-            });
+            }
         }
     } catch (error) {
         console.error('Error in /start handler:', error);
-        await bot.sendMessage(chatId, `Try it later`);
+        try {
+            await bot.sendMessage(chatId, `An error occurred while processing your request. Please try again later.`);
+        } catch (sendMessageError) {
+            console.error(`Failed to send error message to ${chatId}:`, sendMessageError);
+        }
     }
 });
 
