@@ -14,9 +14,14 @@ const app = express();
 app.use(bodyParser.json());
 
 // Инициализация бота
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
-bot.setWebHook(`https://capsule-server.onrender.com/webhook/${process.env.WEBHOOK_SECRET_PATH}`);
+// Обработчик для маршрута вебхука
+app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
+    const { body } = req;
+    bot.processUpdate(body);
+    res.sendStatus(200);
+});
 
 // Хранение идентификаторов пользователей
 const userIds: Set<number> = new Set<number>();
@@ -188,7 +193,7 @@ const schedulePortalNotifications = () => {
     });
 };
 
-// Запуск функции планирования уведомлений
+// Запуск планировщика уведомлений
 schedulePortalNotifications();
 
 export { botRouter };
