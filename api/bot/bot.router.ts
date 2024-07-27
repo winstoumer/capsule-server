@@ -47,44 +47,35 @@ const notifyUsers = (message: string) => {
 };
 
 async function createUserAndSaveData(telegramId: number, firstName: string, referralId?: string): Promise<boolean> {
-    const userId = uuidv4(); // Генерация уникального UUID
+    const userId = uuidv4();
     const currentTime = new Date();
-    const nextTime = new Date(currentTime.getTime() + 1 * 60 * 60 * 1000); // Через 1 час
+    const nextTime = new Date(currentTime.getTime() + 1 * 60 * 60 * 1000);
     const initialBalance = referralId ? 550.00 : 50.00;
 
     try {
         await sql.begin(async sql => {
-            // Вставляем данные в таблицу users, обновляем, если запись уже существует
+            // Вставляем данные в таблицу users
             await sql`
                 INSERT INTO users (user_id, telegram_id, first_name, time, time_update, active)
                 VALUES (${userId}, ${telegramId}, ${firstName}, ${currentTime}, ${currentTime}, true)
-                ON CONFLICT (telegram_id) DO UPDATE
-                SET first_name = EXCLUDED.first_name, time = ${currentTime}, time_update = ${currentTime}
-                WHERE users.telegram_id = ${telegramId}
             `;
 
             // Вставляем данные в таблицу balance
             await sql`
                 INSERT INTO balance (user_id, telegram_id, balance, time, time_update, active)
                 VALUES (${userId}, ${telegramId}, ${initialBalance}, ${currentTime}, ${currentTime}, true)
-                ON CONFLICT (user_id) DO UPDATE
-                SET balance = EXCLUDED.balance, time_update = ${currentTime}
             `;
 
             // Вставляем данные в таблицу user_matter
             await sql`
                 INSERT INTO user_matter (user_id, telegram_id, matter_id, time, time_update, active)
                 VALUES (${userId}, ${telegramId}, 1, ${currentTime}, ${currentTime}, true)
-                ON CONFLICT (user_id) DO UPDATE
-                SET matter_id = EXCLUDED.matter_id, time_update = ${currentTime}
             `;
 
             // Вставляем данные в таблицу current_mining
             await sql`
                 INSERT INTO current_mining (user_id, telegram_id, time, next_time, matter_id)
                 VALUES (${userId}, ${telegramId}, ${currentTime}, ${nextTime}, 1)
-                ON CONFLICT (user_id) DO UPDATE
-                SET next_time = EXCLUDED.next_time
             `;
 
             // Если есть referralId, вставляем данные в таблицу referral
@@ -104,7 +95,7 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
         });
         return true;
     } catch (error) {
-        console.error(`Error in createUserAndSaveData for telegramId ${telegramId}:`, error);
+        console.error('Error in createUserAndSaveData:', error);
         return false;
     }
 }
@@ -130,50 +121,24 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
             console.log(`User created status for ${telegramId}:`, userCreated);
 
             if (userCreated) {
-                try {
-                    await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
-                        reply_markup: {
-                            inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
-                        }
-                    });
-                } catch (sendMessageError) {
-                    console.error(`Failed to send welcome message to ${chatId}:`, sendMessageError);
-                    try {
-                        await bot.sendMessage(chatId, `An error occurred while sending your welcome message. Please try again later.`);
-                    } catch (finalError) {
-                        console.error(`Failed to send error message to ${chatId}:`, finalError);
-                    }
-                }
-            } else {
-                try {
-                    await bot.sendMessage(chatId, `An error occurred while creating your account. Please try again later.`);
-                } catch (sendMessageError) {
-                    console.error(`Failed to send account creation error message to ${chatId}:`, sendMessageError);
-                }
-            }
-        } else {
-            try {
                 await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
                     reply_markup: {
                         inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
                     }
                 });
-            } catch (sendMessageError) {
-                console.error(`Failed to send message to ${chatId}:`, sendMessageError);
-                try {
-                    await bot.sendMessage(chatId, `An error occurred while sending your message. Please try again later.`);
-                } catch (finalError) {
-                    console.error(`Failed to send error message to ${chatId}:`, finalError);
-                }
+            } else {
+                await bot.sendMessage(chatId, `Try it later`);
             }
+        } else {
+            await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
+                reply_markup: {
+                    inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
+                }
+            });
         }
     } catch (error) {
         console.error('Error in /start handler:', error);
-        try {
-            await bot.sendMessage(chatId, `An error occurred while processing your request. Please try again later.`);
-        } catch (sendMessageError) {
-            console.error(`Failed to send error message to ${chatId}:`, sendMessageError);
-        }
+        await bot.sendMessage(chatId, `Try it later`);
     }
 });
 
@@ -224,6 +189,9 @@ const schedulePortalNotifications = () => {
 };
 
 // Запуск функции планирования уведомлений
+schedulePortalNotifications();
+
+// Запуск планировщика уведомлений
 schedulePortalNotifications();
 
 export { botRouter };
