@@ -82,7 +82,7 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
                 INSERT INTO current_mining (user_id, telegram_id, time, next_time, matter_id, mint_active)
                 VALUES (${userId}, ${telegramId}, ${currentTime}, ${nextTime}, 1, false)
                 ON CONFLICT (user_id) DO UPDATE
-                SET next_time = EXCLUDED.next_time
+                SET next_time = EXCLUDED.next_time, mint_active = EXCLUDED.mint_active
             `;
 
             // Если есть referralId, вставляем данные в таблицу referral
