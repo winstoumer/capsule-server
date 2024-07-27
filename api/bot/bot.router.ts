@@ -31,7 +31,7 @@ const portalIntervals = [
     { open: { hour: 10, minute: 30 }, close: { hour: 11, minute: 0 } },
     { open: { hour: 11, minute: 0 }, close: { hour: 16, minute: 30 } },
     { open: { hour: 16, minute: 0 }, close: { hour: 16, minute: 30 } },
-    { open: { hour: 22, minute: 0 }, close: { hour: 22, minute: 30 } }
+    { open: { hour: 16, minute: 30 }, close: { hour: 23, minute: 30 } }
 ];
 
 // Функция для отправки сообщения всем пользователям
