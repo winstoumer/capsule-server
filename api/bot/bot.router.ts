@@ -54,7 +54,8 @@ const notifyUsers = (message: string) => {
 async function createUserAndSaveData(telegramId: number, firstName: string, referralId?: string): Promise<boolean> {
     const userId = uuidv4();
     const currentTime = new Date();
-    const nextTime = new Date(currentTime.getTime() + 1 * 60 * 60 * 1000);
+    const sixHoursInMilliseconds = 6 * 60 * 60 * 1000;
+    const nextTime = new Date(currentTime.getTime() + sixHoursInMilliseconds);
     const initialBalance = referralId ? 550.00 : 50.00;
 
     try {
@@ -79,8 +80,8 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
 
             // Вставляем данные в таблицу current_mining
             await sql`
-                INSERT INTO current_mining (user_id, telegram_id, time, next_time, matter_id, mint_active)
-                VALUES (${userId}, ${telegramId}, ${currentTime}, ${nextTime}, 1, false)
+                INSERT INTO current_mining (user_id, telegram_id, time, next_time, matter_id, nft_mined, mint_active)
+                VALUES (${userId}, ${telegramId}, ${currentTime}, ${nextTime}, 1, false, false)
             `;
 
             // Если есть referralId, вставляем данные в таблицу referral
