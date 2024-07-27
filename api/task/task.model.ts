@@ -10,6 +10,8 @@ interface Task {
   time: Date;
   active: boolean;
   link: string;
+  icon: string;
+  required_progress: number;
   // not in the database
   ready: boolean;
 }

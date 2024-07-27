@@ -100,7 +100,7 @@ async function createUserAndSaveData(telegramId: number, firstName: string, refe
         });
         return true;
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error in createUserAndSaveData:', error);
         return false;
     }
 }
@@ -117,6 +117,7 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
             SELECT 1 FROM users WHERE telegram_id = ${telegramId}
         `;
         if (userExists.length === 0) {
+            console.log(`User with telegram_id ${telegramId} does not exist. Creating new user...`);
             const userCreated = await createUserAndSaveData(telegramId, firstName, referralId);
             if (userCreated) {
                 await bot.sendMessage(chatId, `Hi, ${firstName}!`, {
@@ -135,7 +136,7 @@ bot.onText(/\/start(?:\s+r_(\d+))?/, async (msg: any, match: any) => {
             });
         }
     } catch (error) {
-        console.error('Error /start:', error);
+        console.error('Error in /start handler:', error);
         await bot.sendMessage(chatId, `Try it later`);
     }
 });
