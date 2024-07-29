@@ -1,5 +1,3 @@
-// task.router.ts
-
 import { Router } from 'express';
 import { getAllTasksByTelegramIdHandler, completeTaskHandler, claimRewardHandler } from './task.controller';
 

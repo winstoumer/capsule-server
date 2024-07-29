@@ -1,5 +1,3 @@
-// task.controller.ts
-
 import { Request, Response } from 'express';
 import { getAllTasksByTelegramId, completeTask, claimReward } from './task.model';
 
@@ -7,8 +5,7 @@ async function getAllTasksByTelegramIdHandler(req: Request, res: Response): Prom
   const { telegramId } = req.params;
   try {
     const tasks = await getAllTasksByTelegramId(parseInt(telegramId, 10));
-    const tasksWithReady = tasks.map(task => ({ ...task, ready: !!task.ready }));
-    res.json(tasksWithReady);
+    res.json(tasks);
   } catch (error) {
     console.error('Ошибка при получении списка заданий для пользователя:', error);
     res.status(500).json({ message: 'Произошла ошибка при получении списка заданий для пользователя' });
