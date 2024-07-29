@@ -1,7 +1,7 @@
 // task.controller.ts
 
 import { Request, Response } from 'express';
-import { getAllTasksByTelegramId, completeTask } from './task.model';
+import { getAllTasksByTelegramId, completeTask, claimReward } from './task.model';
 
 async function getAllTasksByTelegramIdHandler(req: Request, res: Response): Promise<void> {
   const { telegramId } = req.params;
@@ -26,4 +26,15 @@ async function completeTaskHandler(req: Request, res: Response): Promise<void> {
   }
 }
 
-export { getAllTasksByTelegramIdHandler, completeTaskHandler };
+async function claimRewardHandler(req: Request, res: Response): Promise<void> {
+  const { telegramId, taskId } = req.params;
+  try {
+    await claimReward(parseInt(telegramId, 10), parseInt(taskId, 10));
+    res.status(200).json({ message: 'Награда успешно получена.' });
+  } catch (error) {
+    console.error('Ошибка при получении награды:', error);
+    res.status(500).json({ message: 'Произошла ошибка при получении награды.' });
+  }
+}
+
+export { getAllTasksByTelegramIdHandler, completeTaskHandler, claimRewardHandler };
