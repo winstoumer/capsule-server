@@ -28,27 +28,41 @@ const userIds: Set<number> = new Set<number>();
 
 // Определите расписание времени открытия и закрытия портала
 const portalIntervals = [
-    { open: { hour: 23, minute: 31 }, close: { hour: 10, minute: 59 } },
-    { open: { hour: 11, minute: 0 }, close: { hour: 15, minute: 59 } },
-    { open: { hour: 16, minute: 0 }, close: { hour: 16, minute: 30 } },
-    { open: { hour: 16, minute: 31 }, close: { hour: 23, minute: 30 } }
+    { open: { hour: 2, minute: 10 }, close: { hour: 2, minute: 40 } },
+    { open: { hour: 6, minute: 10 }, close: { hour: 6, minute: 40 } },
+    { open: { hour: 9, minute: 10 }, close: { hour: 9, minute: 40 } },
+    { open: { hour: 12, minute: 10 }, close: { hour: 12, minute: 40 } },
+    { open: { hour: 16, minute: 10 }, close: { hour: 16, minute: 40 } },
+    { open: { hour: 18, minute: 10 }, close: { hour: 18, minute: 40 } },
+    { open: { hour: 19, minute: 10 }, close: { hour: 19, minute: 40 } },
+    { open: { hour: 21, minute: 10 }, close: { hour: 21, minute: 40 } },
+    { open: { hour: 23, minute: 10 }, close: { hour: 23, minute: 40 } }
 ];
 
-// Функция для отправки сообщения всем пользователям
-const notifyUsers = (message: string) => {
-    userIds.forEach(userId => {
-        bot.sendMessage(userId, message, {
-            reply_markup: {
-                inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
+// Функция для отправки сообщения всем пользователям из базы данных
+const notifyUsers = async (message: string) => {
+    try {
+        // Получаем все активные идентификаторы пользователей из базы данных
+        const users = await sql`SELECT telegram_id FROM users WHERE active = true`;
+        
+        // Отправляем сообщение каждому пользователю
+        for (const user of users) {
+            const { telegram_id } = user;
+            try {
+                await bot.sendMessage(telegram_id, message, {
+                    reply_markup: {
+                        inline_keyboard: [[{ text: 'Open', url: 'https://t.me/bigmatter_bot/app' }]]
+                    }
+                });
+            } catch (error) {
+                // Логгируем ошибку и продолжаем отправку другим пользователям
+                console.error(`Failed to send message to user ${telegram_id}:`, error);
+                continue; // Пропускаем текущего пользователя и продолжаем со следующим
             }
-        }).catch((error: unknown) => {
-            if (error instanceof Error) {
-                console.error(`Failed to send message to user ${userId}: ${error.message}`);
-            } else {
-                console.error(`Failed to send message to user ${userId}: ${error}`);
-            }
-        });
-    });
+        }
+    } catch (error) {
+        console.error('Error in notifyUsers:', error);
+    }
 };
 
 async function createUserAndSaveData(telegramId: number, firstName: string, referralId?: string): Promise<boolean> {
@@ -184,10 +198,12 @@ const schedulePortalNotifications = () => {
             durationMessage += `${minutes} minute${minutes > 1 ? 's' : ''}`;
         }
 
+        // Планируем задачу для уведомления об открытии портала
         schedule.scheduleJob({ hour: open.hour, minute: open.minute, second: 0 }, () => {
             notifyUsers(`The portal is now OPEN for ${durationMessage}.`);
         });
 
+        // Планируем задачу для уведомления о закрытии портала
         schedule.scheduleJob({ hour: close.hour, minute: close.minute, second: 0 }, () => {
             notifyUsers('The portal is now CLOSED.');
         });
