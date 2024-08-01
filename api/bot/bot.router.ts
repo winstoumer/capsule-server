@@ -35,7 +35,7 @@ const portalIntervals = [
     { open: { hour: 16, minute: 10 }, close: { hour: 16, minute: 40 } },
     { open: { hour: 18, minute: 10 }, close: { hour: 18, minute: 40 } },
     { open: { hour: 19, minute: 10 }, close: { hour: 19, minute: 40 } },
-    { open: { hour: 21, minute: 10 }, close: { hour: 21, minute: 40 } },
+    { open: { hour: 21, minute: 30 }, close: { hour: 22, minute: 10 } },
     { open: { hour: 23, minute: 10 }, close: { hour: 23, minute: 40 } }
 ];
 
@@ -200,12 +200,12 @@ const schedulePortalNotifications = () => {
 
         // Планируем задачу для уведомления об открытии портала
         schedule.scheduleJob({ hour: open.hour, minute: open.minute, second: 0 }, () => {
-            notifyUsers(`The portal is now OPEN for ${durationMessage}.`);
+            notifyUsers(`The portal is now open for ${durationMessage} 🛸`);
         });
 
         // Планируем задачу для уведомления о закрытии портала
         schedule.scheduleJob({ hour: close.hour, minute: close.minute, second: 0 }, () => {
-            notifyUsers('The portal is now CLOSED.');
+            notifyUsers(`I'll be back soon 👽`);
         });
     });
 };
