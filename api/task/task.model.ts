@@ -72,12 +72,12 @@ async function completeTask(telegramId: number, taskId: number): Promise<void> {
 
       await sql`
         INSERT INTO completed_task (user_id, telegram_id, task_id, time, is_completed)
-        VALUES (${userId}, ${telegramId}, ${taskId}, NOW(), FALSE);
+        VALUES (${userId}, ${telegramId}, ${taskId}, NOW(), TRUE);
       `;
     } else if (!existingCompletedTask[0].is_completed) {
       await sql`
         UPDATE completed_task
-        SET is_completed = TRUE
+        SET is_completed = TRUE, time = NOW()
         WHERE id = ${existingCompletedTask[0].id};
       `;
     }
@@ -94,7 +94,7 @@ async function claimReward(telegramId: number, taskId: number): Promise<void> {
       WHERE telegram_id = ${telegramId} AND task_id = ${taskId} AND is_completed = TRUE;
     `;
 
-    if (existingCompletedTask.length === 0) {
+    if (existingCompletedTask.length === 0 || existingCompletedTask[0].is_reward_claimed) {
       throw new Error('Задание не выполнено или награда уже получена.');
     }
 
@@ -110,11 +110,10 @@ async function claimReward(telegramId: number, taskId: number): Promise<void> {
 
     const reward = task[0].reward;
     const time_update = new Date();
-    const formattedAmount = Math.abs(reward);
 
     await sql`
       UPDATE balance
-      SET balance = balance + ${formattedAmount}, time_update = ${time_update}
+      SET balance = balance + ${reward}, time_update = ${time_update}
       WHERE telegram_id = ${telegramId}
     `;
 
