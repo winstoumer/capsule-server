@@ -23,6 +23,36 @@ app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
     res.sendStatus(200);
 });
 
+// ID канала (можно получить из настроек канала или от BotFather)
+const channelId = '-1002165541344';
+
+// Условие для отправки сообщения при запуске
+const sendMessageOnStart = true;
+
+// Функция для отправки и закрепления сообщения в канале
+const sendMessageToChannel = async () => {
+    const opts = {
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    {
+                        text: 'Play',
+                        url: 'https://t.me/bigmatter_bot/app'
+                    }
+                ]
+            ]
+        }
+    };
+
+    const message = await bot.sendMessage(channelId, 'Bigmatter here:', opts);
+    await bot.pinChatMessage(channelId, message.message_id);
+};
+
+// Проверка условия и отправка сообщения при запуске бота
+if (sendMessageOnStart) {
+    sendMessageToChannel();
+}
+
 // Хранение идентификаторов пользователей
 const userIds: Set<number> = new Set<number>();
 
