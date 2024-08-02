@@ -36,7 +36,7 @@ const sendMessageToChannel = async () => {
             inline_keyboard: [
                 [
                     {
-                        text: 'Play',
+                        text: 'Launch',
                         url: 'https://t.me/bigmatter_bot/app'
                     }
                 ]
