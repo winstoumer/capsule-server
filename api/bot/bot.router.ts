@@ -27,11 +27,25 @@ app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
 const channelId = '-1002165541344';
 
 // Условие для отправки сообщения при запуске
-const sendMessageOnStart = false;
+const sendMessageOnStart = true;
 
 // Функция для отправки и закрепления сообщения в канале
 const sendMessageToChannel = async () => {
+    const imageUrl = 'https://i.ibb.co/QKXRBBN/svgviewer-png-output-1.png'; // Replace with your image URL or file ID
+
     const opts = {
+        caption: `
+            🎮 *Bigmatter: A game on Telegram where every click counts! 🚀*
+
+            Welcome to Bigmatter - [@bigmatter_bot](https://t.me/bigmatter_bot)!
+            
+            🔹 *Tapper*: Click to collect resources and earn rewards! Note: To access the Tapper, you need to wait for the portal to open, which appears at different times for a limited duration!
+            🔹 *Mining*: Become a virtual miner and unlock new opportunities!
+            🔹 *Quests*: Complete interesting quests to increase your earnings!
+            🔹 *Referral Program*: Invite friends and earn bonuses from their successes!
+            🔹 *Leaderboard*: A leaderboard will be coming soon, where the most active players will receive the greatest rewards!
+        `,
+        parse_mode: 'Markdown',
         reply_markup: {
             inline_keyboard: [
                 [
@@ -44,7 +58,10 @@ const sendMessageToChannel = async () => {
         }
     };
 
-    const message = await bot.sendMessage(channelId, 'Bigmatter here:', opts);
+    // Send the photo with the caption
+    const message = await bot.sendPhoto(channelId, imageUrl, opts);
+
+    // Pin the photo message
     await bot.pinChatMessage(channelId, message.message_id);
 };
 
@@ -75,7 +92,7 @@ const notifyUsers = async (message: string) => {
     try {
         // Получаем все активные идентификаторы пользователей из базы данных
         const users = await sql`SELECT telegram_id FROM users WHERE active = true`;
-        
+
         // Отправляем сообщение каждому пользователю
         for (const user of users) {
             const { telegram_id } = user;
