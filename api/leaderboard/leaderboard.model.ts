@@ -15,8 +15,6 @@ interface Leader {
 
 interface LeaderboardRecord {
     telegram_id: number;
-    event_id: number;
-    place: number;
     points: number;
 }
 
@@ -77,77 +75,73 @@ export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
     }
 };
 
+const getCurrentEventId = async (): Promise<number> => {
+    try {
+        const result = await sql`
+            SELECT id FROM events
+            WHERE start_date <= CURRENT_DATE
+            AND end_date >= CURRENT_DATE
+            LIMIT 1;
+        `;
+        if (result.length === 0) {
+            throw new Error('Нет текущего события');
+        }
+        return result[0].id;
+    } catch (error) {
+        console.error('Ошибка при получении текущего eventId:', error);
+        throw error;
+    }
+};
+
 export const upsertPoints = async (telegramId: number, newPoints: number): Promise<void> => {
     try {
+        // 1. Получаем текущий event_id
+        const eventId = await getCurrentEventId();
+
         await sql.begin(async transaction => {
-            // 1. Получаем данные о текущих записях для данного пользователя
-            const currentRecord = await transaction<LeaderboardRecord[]>`
+            // 2. Получаем данные о текущих записях для данного события
+            const currentRecords = await transaction<LeaderboardRecord[]>`
                 SELECT * FROM leaderboard
-                WHERE telegram_id = ${telegramId};
+                WHERE event_id = ${eventId}
+                ORDER BY points DESC;
             `;
-            
-            // Если запись существует, обновляем её
-            if (currentRecord.length > 0) {
-                const { event_id, points } = currentRecord[0];
-                
-                // Обновляем запись, если новые points больше текущих
-                if (newPoints > points) {
+
+            // 3. Проверяем, существует ли запись для данного пользователя
+            const existingRecord = currentRecords.find(record => record.telegram_id === telegramId);
+
+            if (existingRecord) {
+                // 3.1 Если запись существует и новые points больше текущих, обновляем запись
+                if (newPoints > existingRecord.points) {
                     await transaction`
                         UPDATE leaderboard
                         SET points = ${newPoints}
-                        WHERE telegram_id = ${telegramId} AND event_id = ${event_id};
+                        WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
                     `;
                 }
-                
-                // Пересчитываем места
-                await transaction`
-                    WITH Ranked AS (
-                        SELECT
-                            telegram_id,
-                            event_id,
-                            points,
-                            RANK() OVER (PARTITION BY event_id ORDER BY points DESC) as new_place
-                        FROM leaderboard
-                    )
-                    UPDATE leaderboard
-                    SET place = Ranked.new_place
-                    FROM Ranked
-                    WHERE leaderboard.telegram_id = Ranked.telegram_id
-                    AND leaderboard.event_id = Ranked.event_id;
-                `;
             } else {
-                // Если запись не существует, добавляем её
-                // Получаем event_id из вашего источника (например, из параметров функции или другой таблицы)
-                const event_id = 1; // Замените на логику для получения event_id
-
-                // Вставляем новую запись
+                // 3.2 Если запись не существует, добавляем её
                 await transaction`
-                    INSERT INTO leaderboard (telegram_id, event_id, place, points)
-                    VALUES (
-                        ${telegramId}, 
-                        ${event_id}, 
-                        (SELECT COALESCE(MAX(place), 0) + 1 FROM leaderboard WHERE event_id = ${event_id}), 
-                        ${newPoints}
-                    )
-                `;
-                
-                // Пересчитываем места после вставки новой записи
-                await transaction`
-                    WITH Ranked AS (
-                        SELECT
-                            telegram_id,
-                            event_id,
-                            points,
-                            RANK() OVER (PARTITION BY event_id ORDER BY points DESC) as new_place
-                        FROM leaderboard
-                    )
-                    UPDATE leaderboard
-                    SET place = Ranked.new_place
-                    FROM Ranked
-                    WHERE leaderboard.telegram_id = Ranked.telegram_id
-                    AND leaderboard.event_id = Ranked.event_id;
+                    INSERT INTO leaderboard (telegram_id, event_id, points)
+                    VALUES (${telegramId}, ${eventId}, ${newPoints});
                 `;
             }
+
+            // 4. Пересчитываем места
+            await transaction`
+                WITH Ranked AS (
+                    SELECT
+                        telegram_id,
+                        event_id,
+                        points,
+                        RANK() OVER (PARTITION BY event_id ORDER BY points DESC) as new_place
+                    FROM leaderboard
+                )
+                UPDATE leaderboard
+                SET place = Ranked.new_place
+                FROM Ranked
+                WHERE leaderboard.telegram_id = Ranked.telegram_id
+                AND leaderboard.event_id = Ranked.event_id;
+            `;
         });
 
         console.log('Баллы обновлены и места пересчитаны');
