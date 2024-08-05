@@ -5,7 +5,7 @@ import { updatePointsController, getLeadersController } from './leaderboard.cont
 const router = Router();
 
 // Обновление баллов
-router.post('/update-points', updatePointsController);
+router.post('/upsert-points', updatePointsController);
 
 // Получение текущих лидеров с наградами
 router.get('/current-leaders', getLeadersController);
