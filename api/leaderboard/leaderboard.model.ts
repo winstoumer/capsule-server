@@ -57,14 +57,14 @@ export class LeaderboardModel {
         });
     }
 
-    static async addOrUpdateEntry(telegramId: number, points: number): Promise<void> {
+    static async addOrUpdateEntry(telegram_id: number, points: number): Promise<void> {
         const currentDate = new Date();
 
         // Получаем first_name из таблицы users
         const userResult = await sql`
             SELECT first_name
             FROM users
-            WHERE telegram_id = ${telegramId}
+            WHERE telegram_id = ${telegram_id}
         `;
 
         if (userResult.length === 0) {
@@ -90,7 +90,7 @@ export class LeaderboardModel {
         // Вставляем или обновляем запись в таблице leaderboard
         await sql`
             INSERT INTO leaderboard (telegram_id, first_name, points, event_id)
-            VALUES (${telegramId}, ${firstName}, ${points}, ${eventId})
+            VALUES (${telegram_id}, ${firstName}, ${points}, ${eventId})
             ON CONFLICT (telegram_id, event_id) DO UPDATE
             SET points = CASE
                 WHEN EXCLUDED.points > leaderboard.points THEN EXCLUDED.points
