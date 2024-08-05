@@ -126,7 +126,7 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
                 `;
             }
 
-            // 4. Пересчитываем места
+            // 4. Пересчитываем места и присваиваем их записям
             await transaction`
                 WITH Ranked AS (
                     SELECT
