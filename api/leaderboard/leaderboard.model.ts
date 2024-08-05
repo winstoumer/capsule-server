@@ -1,13 +1,18 @@
 // api/leaderboard/leaderboard.model.ts
 import { sql } from '../database';
 
+export interface Reward {
+    type: string;
+    value: string;
+}
+
 export interface LeaderboardEntry {
     telegram_id: number;
     first_name: string;
     points: number;
     event_id: number;
     place?: number;  // Виртуальное поле для места
-    reward?: string; // Виртуальное поле для награды
+    reward?: Reward[]; // Обновлено для массива наград
 }
 
 export class LeaderboardModel {
@@ -23,21 +28,25 @@ export class LeaderboardModel {
             ORDER BY points DESC
             LIMIT 200
         `;
-
+    
         const rewardsResult = await sql`
             SELECT place, coins, multiplier, ton
             FROM leaderboard_rewards
         `;
-
+    
         // Сопоставляем награды с местами
-        const rewardsMap = new Map<number, string>();
+        const rewardsMap = new Map<number, Reward[]>();
         for (const reward of rewardsResult) {
-            rewardsMap.set(reward.place, `Coins: ${reward.coins || 0}, Multiplier: ${reward.multiplier || 'None'}, ${reward.ton || 0}TON`);
+            rewardsMap.set(reward.place, [
+                { type: 'coins', value: reward.coins.toString() },
+                { type: 'multiplier', value: reward.multiplier.toString() },
+                { type: 'ton', value: reward.ton.toString() }
+            ]);
         }
-
+    
         return leaderboardResult.map((row: any) => {
-            const reward = rewardsMap.get(row.place) || 'No reward';
-
+            const reward = rewardsMap.get(row.place) || [];
+    
             return {
                 telegram_id: row.telegram_id,
                 first_name: row.first_name,
