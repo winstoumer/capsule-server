@@ -14,6 +14,7 @@ import { matterRouter } from './api/matter';
 import { currentMiningRouter } from './api/currentMining';
 import { collectionsRouter } from './api/collections';
 import { mintRouter } from './api/mint';
+import leaderboardRoutes from './api/leaderboard/leaderboard.router';
 
 import * as express from 'express';
 
@@ -46,6 +47,7 @@ app.use('/api/matter', matterRouter);
 app.use('/api/currentMining', currentMiningRouter);
 app.use('/api/collections', collectionsRouter);
 app.use('/api/mint', mintRouter);
+app.use('/api/leaderboard', leaderboardRoutes)
 
 app.get('/api/ton-json/tonconnect-manifest.json', async (req, res) => {
   try {

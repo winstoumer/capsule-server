@@ -27,7 +27,7 @@ app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
 const channelId = '-1002165541344';
 
 // Условие для отправки сообщения при запуске
-const sendMessageOnStart = true;
+const sendMessageOnStart = false;
 
 // Функция для отправки и закрепления сообщения в канале
 const sendMessageToChannel = async () => {
