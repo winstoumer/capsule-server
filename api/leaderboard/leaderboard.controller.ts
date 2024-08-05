@@ -23,7 +23,7 @@ export class LeaderboardController {
         try {
             const { telegramId, points } = req.body;
 
-            if (!telegramId || !points) {
+            if (!telegramId || points == null) {
                 res.status(400).json({ error: 'Missing required fields' });
                 return;
             }

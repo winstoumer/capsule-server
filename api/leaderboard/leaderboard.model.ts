@@ -12,7 +12,7 @@ export interface LeaderboardEntry {
     points: number;
     event_id: number;
     place?: number;  // Виртуальное поле для места
-    reward?: Reward[]; // Обновлено для массива наград
+    reward?: Reward[]; // Виртуальное поле для награды
 }
 
 export class LeaderboardModel {
@@ -44,6 +44,9 @@ export class LeaderboardModel {
             rewardsMap.set(reward.place, rewardList);
         }
 
+        // Проверка правильности сопоставления наград
+        console.log('Rewards Map:', rewardsMap);
+
         return leaderboardResult.map((row: any) => {
             const reward = rewardsMap.get(row.place) || [];
 
@@ -59,49 +62,44 @@ export class LeaderboardModel {
     }
 
     static async addOrUpdateEntry(telegramId: number, points: number): Promise<void> {
-        try {
-            const currentDate = new Date();
+        const currentDate = new Date();
 
-            // Получаем first_name из таблицы users
-            const userResult = await sql`
-                SELECT first_name
-                FROM users
-                WHERE telegram_id = ${telegramId}
-            `;
+        // Получаем first_name из таблицы users
+        const userResult = await sql`
+            SELECT first_name
+            FROM users
+            WHERE telegram_id = ${telegramId}
+        `;
 
-            if (userResult.length === 0) {
-                throw new Error('User not found');
-            }
-
-            const firstName = userResult[0].first_name;
-
-            // Получаем event_id и проверяем его даты
-            const eventResult = await sql`
-                SELECT id, start_date, end_date
-                FROM events
-                WHERE start_date <= ${currentDate} AND end_date >= ${currentDate}
-                LIMIT 1
-            `;
-
-            if (eventResult.length === 0) {
-                throw new Error('No ongoing event found');
-            }
-
-            const eventId = eventResult[0].id;
-
-            // Вставляем или обновляем запись в таблице leaderboard
-            await sql`
-                INSERT INTO leaderboard (telegram_id, first_name, points, event_id)
-                VALUES (${telegramId}, ${firstName}, ${points}, ${eventId})
-                ON CONFLICT (telegram_id, event_id) DO UPDATE
-                SET points = CASE
-                    WHEN EXCLUDED.points > leaderboard.points THEN EXCLUDED.points
-                    ELSE leaderboard.points
-                END
-            `;
-        } catch (error) {
-            console.error('Error adding or updating entry:', error);
-            throw new Error('Failed to add or update entry');
+        if (userResult.length === 0) {
+            throw new Error('User not found');
         }
+
+        const firstName = userResult[0].first_name;
+
+        // Получаем event_id и проверяем его даты
+        const eventResult = await sql`
+            SELECT id, start_date, end_date
+            FROM events
+            WHERE start_date <= ${currentDate} AND end_date >= ${currentDate}
+            LIMIT 1
+        `;
+
+        if (eventResult.length === 0) {
+            throw new Error('No ongoing event found');
+        }
+
+        const eventId = eventResult[0].id;
+
+        // Вставляем или обновляем запись в таблице leaderboard
+        await sql`
+            INSERT INTO leaderboard (telegram_id, first_name, points, event_id)
+            VALUES (${telegramId}, ${firstName}, ${points}, ${eventId})
+            ON CONFLICT (telegram_id, event_id) DO UPDATE
+            SET points = CASE
+                WHEN EXCLUDED.points > leaderboard.points THEN EXCLUDED.points
+                ELSE leaderboard.points
+            END
+        `;
     }
 }
