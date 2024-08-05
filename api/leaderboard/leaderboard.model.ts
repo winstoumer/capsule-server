@@ -65,13 +65,29 @@ export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
 export const upsertPoints = async (telegramId: number, newPoints: number): Promise<void> => {
     try {
         await sql.begin(async transaction => {
-            // Вставка или обновление записи
-            await transaction`
-                INSERT INTO leaderboard (telegram_id, points)
-                VALUES (${telegramId}, ${newPoints})
-                ON CONFLICT (telegram_id)
-                DO UPDATE SET points = GREATEST(leaderboard.points, EXCLUDED.points);
+            // Проверка наличия записи
+            const existingEntry = await transaction`
+                SELECT points FROM leaderboard WHERE telegram_id = ${telegramId};
             `;
+
+            if (existingEntry.length > 0) {
+                const currentPoints = existingEntry[0].points;
+
+                // Обновление записи, если новые баллы больше текущих
+                if (newPoints > currentPoints) {
+                    await transaction`
+                        UPDATE leaderboard
+                        SET points = ${newPoints}
+                        WHERE telegram_id = ${telegramId};
+                    `;
+                }
+            } else {
+                // Вставка новой записи
+                await transaction`
+                    INSERT INTO leaderboard (telegram_id, points)
+                    VALUES (${telegramId}, ${newPoints});
+                `;
+            }
 
             // Пересчет мест
             await transaction`
