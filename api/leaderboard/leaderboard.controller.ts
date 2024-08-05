@@ -21,14 +21,14 @@ export class LeaderboardController {
 
     static async addOrUpdateEntry(req: Request, res: Response): Promise<void> {
         try {
-            const { telegramId, points } = req.body;
+            const { telegram_id, points } = req.body;
 
-            if (!telegramId || points == null) {
+            if (!telegram_id || points == null) {
                 res.status(400).json({ error: 'Missing required fields' });
                 return;
             }
 
-            await LeaderboardModel.addOrUpdateEntry(telegramId, points);
+            await LeaderboardModel.addOrUpdateEntry(telegram_id, points);
             res.status(200).json({ message: 'Entry added or updated successfully' });
         } catch (error) {
             console.error('Error in addOrUpdateEntry:', error);
