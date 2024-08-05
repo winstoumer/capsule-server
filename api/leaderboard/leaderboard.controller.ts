@@ -4,36 +4,35 @@ import { LeaderboardModel } from './leaderboard.model';
 
 export class LeaderboardController {
     static async getLeaderboard(req: Request, res: Response): Promise<void> {
-        const eventId = parseInt(req.query.eventId as string);
-        
-        if (isNaN(eventId)) {
-            res.status(400).send('Invalid event ID');
-            return;
-        }
-
         try {
+            const eventId = parseInt(req.query.eventId as string, 10);
+            if (isNaN(eventId)) {
+                res.status(400).json({ error: 'Invalid event ID' });
+                return;
+            }
+
             const leaderboard = await LeaderboardModel.getLeaderboard(eventId);
             res.json(leaderboard);
         } catch (error) {
-            console.error('Error fetching leaderboard:', error);
-            res.status(500).send('Internal Server Error');
+            console.error('Error in getLeaderboard:', error);
+            res.status(500).json({ error: 'Failed to fetch leaderboard' });
         }
     }
 
     static async addOrUpdateEntry(req: Request, res: Response): Promise<void> {
-        const { telegram_id, points } = req.body;
-
-        if (typeof telegram_id !== 'number' || typeof points !== 'number') {
-            res.status(400).send('Invalid data');
-            return;
-        }
-
         try {
-            await LeaderboardModel.addOrUpdateEntry(telegram_id, points);
-            res.status(200).send('Leaderboard entry added or updated');
+            const { telegramId, points } = req.body;
+
+            if (!telegramId || !points) {
+                res.status(400).json({ error: 'Missing required fields' });
+                return;
+            }
+
+            await LeaderboardModel.addOrUpdateEntry(telegramId, points);
+            res.status(200).json({ message: 'Entry added or updated successfully' });
         } catch (error) {
-            console.error('Error adding/updating leaderboard entry:', error);
-            res.status(500).send('Internal Server Error');
+            console.error('Error in addOrUpdateEntry:', error);
+            res.status(500).json({ error: 'Failed to add or update entry' });
         }
     }
 }
