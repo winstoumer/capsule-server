@@ -70,13 +70,13 @@ export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
     }
 };
 
-export const upsertPoints = async (telegramId: number, newPoints: number, eventId: number): Promise<void> => {
+export const upsertPoints = async (telegramId: number, newPoints: number): Promise<void> => {
     try {
         await sql.begin(async transaction => {
-            // Проверка существует ли уже запись с таким event_id и place
+            // Проверка существует ли уже запись с таким telegramId
             const existingRecord = await transaction`
                 SELECT * FROM leaderboard
-                WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
+                WHERE telegram_id = ${telegramId};
             `;
 
             if (existingRecord.length > 0) {
@@ -84,14 +84,14 @@ export const upsertPoints = async (telegramId: number, newPoints: number, eventI
                 await transaction`
                     UPDATE leaderboard
                     SET points = ${newPoints}
-                    WHERE telegram_id = ${telegramId} AND event_id = ${eventId}
+                    WHERE telegram_id = ${telegramId}
                     AND points < ${newPoints};
                 `;
             } else {
                 // Если запись не существует, вставляем новую
                 await transaction`
-                    INSERT INTO leaderboard (telegram_id, event_id, place, points)
-                    VALUES (${telegramId}, ${eventId}, (SELECT COALESCE(MAX(place), 0) + 1 FROM leaderboard WHERE event_id = ${eventId}), ${newPoints})
+                    INSERT INTO leaderboard (telegram_id, place, points)
+                    VALUES (${telegramId}, (SELECT COALESCE(MAX(place), 0) + 1 FROM leaderboard), ${newPoints})
                 `;
             }
 
@@ -100,15 +100,14 @@ export const upsertPoints = async (telegramId: number, newPoints: number, eventI
                 WITH Ranked AS (
                     SELECT
                         telegram_id,
-                        event_id,
                         points,
-                        RANK() OVER (PARTITION BY event_id ORDER BY points DESC) as new_place
+                        RANK() OVER (ORDER BY points DESC) as new_place
                     FROM leaderboard
                 )
                 UPDATE leaderboard
                 SET place = Ranked.new_place
                 FROM Ranked
-                WHERE leaderboard.telegram_id = Ranked.telegram_id AND leaderboard.event_id = Ranked.event_id;
+                WHERE leaderboard.telegram_id = Ranked.telegram_id;
             `;
         });
 
