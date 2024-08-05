@@ -70,8 +70,7 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
                 INSERT INTO leaderboard (telegram_id, points)
                 VALUES (${telegramId}, ${newPoints})
                 ON CONFLICT (telegram_id)
-                DO UPDATE SET points = EXCLUDED.points
-                WHERE leaderboard.points < EXCLUDED.points;
+                DO UPDATE SET points = GREATEST(leaderboard.points, EXCLUDED.points);
             `;
 
             // Пересчет мест
