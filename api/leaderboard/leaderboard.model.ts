@@ -80,7 +80,7 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
 
             // 2. Проверка наличия записи для пользователя и события
             const existingEntry = await transaction`
-                SELECT id, points, place FROM leaderboard 
+                SELECT id, points FROM leaderboard 
                 WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
             `;
 
@@ -134,3 +134,4 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
         throw error;
     }
 };
+
