@@ -12,7 +12,7 @@ export interface LeaderboardEntry {
     points: number;
     event_id: number;
     place?: number;  // Виртуальное поле для места
-    reward?: Reward[]; // Виртуальное поле для награды
+    rewards?: Reward[]; // Виртуальное поле для наград
 }
 
 export class LeaderboardModel {
@@ -37,26 +37,22 @@ export class LeaderboardModel {
         // Сопоставляем награды с местами
         const rewardsMap = new Map<number, Reward[]>();
         for (const reward of rewardsResult) {
-            const rewardList: Reward[] = [];
-            if (reward.coins) rewardList.push({ type: 'coins', value: reward.coins.toString() });
-            if (reward.multiplier) rewardList.push({ type: 'multiplier', value: reward.multiplier });
-            if (reward.ton) rewardList.push({ type: 'ton', value: reward.ton + 'TON' });
-            rewardsMap.set(reward.place, rewardList);
+            const rewards: Reward[] = [];
+            if (reward.coins) rewards.push({ type: 'coins', value: reward.coins.toString() });
+            if (reward.multiplier) rewards.push({ type: 'multiplier', value: reward.multiplier });
+            if (reward.ton) rewards.push({ type: 'ton', value: reward.ton + 'TON' });
+            rewardsMap.set(reward.place, rewards);
         }
 
-        // Проверка правильности сопоставления наград
-        console.log('Rewards Map:', rewardsMap);
-
         return leaderboardResult.map((row: any) => {
-            const reward = rewardsMap.get(row.place) || [];
-
+            const rewards = rewardsMap.get(row.place) || [];
             return {
                 telegram_id: row.telegram_id,
                 first_name: row.first_name,
                 points: row.points,
                 event_id: eventId,
                 place: row.place,
-                reward: reward // Добавляем виртуальное поле для награды
+                rewards: rewards // Добавляем виртуальное поле для наград
             };
         });
     }
