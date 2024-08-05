@@ -11,7 +11,7 @@ export interface LeaderboardEntry {
     first_name: string;
     points: number;
     event_id: number;
-    place?: number;  // Виртуальное поле для места
+    place?: number;
     rewards?: Reward[]; // Виртуальное поле для наград
 }
 
@@ -45,7 +45,7 @@ export class LeaderboardModel {
         }
 
         return leaderboardResult.map((row: any) => {
-            const rewards = rewardsMap.get(row.place) || [];
+            const rewards = rewardsMap.get(parseInt(row.place)) || [];
             return {
                 telegram_id: row.telegram_id,
                 first_name: row.first_name,
