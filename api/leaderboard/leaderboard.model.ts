@@ -17,50 +17,45 @@ export interface LeaderboardEntry {
 
 export class LeaderboardModel {
     static async getLeaderboard(eventId: number): Promise<LeaderboardEntry[]> {
-        try {
-            const leaderboardResult = await sql`
-                SELECT 
-                    telegram_id, 
-                    first_name, 
-                    points, 
-                    ROW_NUMBER() OVER (ORDER BY points DESC) AS place
-                FROM leaderboard
-                WHERE event_id = ${eventId}
-                ORDER BY points DESC
-                LIMIT 200
-            `;
+        const leaderboardResult = await sql`
+            SELECT 
+                telegram_id, 
+                first_name, 
+                points, 
+                ROW_NUMBER() OVER (ORDER BY points DESC) AS place
+            FROM leaderboard
+            WHERE event_id = ${eventId}
+            ORDER BY points DESC
+            LIMIT 200
+        `;
 
-            const rewardsResult = await sql`
-                SELECT place, coins, multiplier, ton
-                FROM leaderboard_rewards
-            `;
+        const rewardsResult = await sql`
+            SELECT place, coins, multiplier, ton
+            FROM leaderboard_rewards
+        `;
 
-            // Сопоставляем награды с местами
-            const rewardsMap = new Map<number, Reward[]>();
-            for (const reward of rewardsResult) {
-                const rewardList: Reward[] = [];
-                if (reward.coins !== null) rewardList.push({ type: 'coins', value: reward.coins.toString() });
-                if (reward.multiplier !== null) rewardList.push({ type: 'multiplier', value: reward.multiplier });
-                if (reward.ton !== null) rewardList.push({ type: 'ton', value: reward.ton });
-                rewardsMap.set(reward.place, rewardList);
-            }
-
-            return leaderboardResult.map((row: any) => {
-                const reward = rewardsMap.get(row.place) || [];
-
-                return {
-                    telegram_id: row.telegram_id,
-                    first_name: row.first_name,
-                    points: row.points,
-                    event_id: eventId,
-                    place: row.place,
-                    reward: reward // Добавляем виртуальное поле для награды
-                };
-            });
-        } catch (error) {
-            console.error('Error fetching leaderboard:', error);
-            throw new Error('Failed to fetch leaderboard');
+        // Сопоставляем награды с местами
+        const rewardsMap = new Map<number, Reward[]>();
+        for (const reward of rewardsResult) {
+            const rewardList: Reward[] = [];
+            if (reward.coins) rewardList.push({ type: 'coins', value: reward.coins.toString() });
+            if (reward.multiplier) rewardList.push({ type: 'multiplier', value: reward.multiplier });
+            if (reward.ton) rewardList.push({ type: 'ton', value: reward.ton + 'TON' });
+            rewardsMap.set(reward.place, rewardList);
         }
+
+        return leaderboardResult.map((row: any) => {
+            const reward = rewardsMap.get(row.place) || [];
+
+            return {
+                telegram_id: row.telegram_id,
+                first_name: row.first_name,
+                points: row.points,
+                event_id: eventId,
+                place: row.place,
+                reward: reward // Добавляем виртуальное поле для награды
+            };
+        });
     }
 
     static async addOrUpdateEntry(telegramId: number, points: number): Promise<void> {
