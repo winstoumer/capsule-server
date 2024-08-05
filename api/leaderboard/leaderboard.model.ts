@@ -70,51 +70,28 @@ export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
     }
 };
 
-export const upsertPoints = async (telegramId: number, newPoints: number): Promise<void> => {
+export const upsertPoints = async (telegramId: number, newPoints: number, eventId: number): Promise<void> => {
     try {
         await sql.begin(async transaction => {
-            // Получение активного события
-            const activeEvent = await transaction`
-                SELECT id FROM events
-                WHERE CURRENT_DATE BETWEEN start_date AND end_date
-                LIMIT 1;
-            `;
-
-            if (activeEvent.length === 0) {
-                throw new Error('Нет активных событий для обновления баллов.');
-            }
-
-            const eventId = activeEvent[0].id;
-
-            // Проверка наличия записи для пользователя и события
-            const existingEntry = await transaction`
-                SELECT id, points FROM leaderboard 
+            // Проверка существует ли уже запись с таким event_id и place
+            const existingRecord = await transaction`
+                SELECT * FROM leaderboard
                 WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
             `;
 
-            if (existingEntry.length > 0) {
-                const currentPoints = existingEntry[0].points;
-
-                // Если новые баллы больше текущих, обновляем их
-                if (newPoints > currentPoints) {
-                    await transaction`
-                        UPDATE leaderboard
-                        SET points = ${newPoints}
-                        WHERE id = ${existingEntry[0].id};
-                    `;
-                }
-            } else {
-                // Вставка новой записи
-                const newPlaceResult = await transaction`
-                    SELECT COALESCE(MAX(place), 0) + 1 AS new_place 
-                    FROM leaderboard 
-                    WHERE event_id = ${eventId};
-                `;
-                const newPlace = newPlaceResult[0].new_place;
-
+            if (existingRecord.length > 0) {
+                // Если запись существует, обновляем её, если новые points больше
                 await transaction`
-                    INSERT INTO leaderboard (telegram_id, event_id, place, reward, points)
-                    VALUES (${telegramId}, ${eventId}, ${newPlace}, 'DefaultReward', ${newPoints});
+                    UPDATE leaderboard
+                    SET points = ${newPoints}
+                    WHERE telegram_id = ${telegramId} AND event_id = ${eventId}
+                    AND points < ${newPoints};
+                `;
+            } else {
+                // Если запись не существует, вставляем новую
+                await transaction`
+                    INSERT INTO leaderboard (telegram_id, event_id, place, points)
+                    VALUES (${telegramId}, ${eventId}, (SELECT COALESCE(MAX(place), 0) + 1 FROM leaderboard WHERE event_id = ${eventId}), ${newPoints})
                 `;
             }
 
@@ -122,17 +99,16 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
             await transaction`
                 WITH Ranked AS (
                     SELECT
-                        id,
                         telegram_id,
                         event_id,
                         points,
-                        RANK() OVER (PARTITION BY event_id ORDER BY points DESC) AS new_place
+                        RANK() OVER (PARTITION BY event_id ORDER BY points DESC) as new_place
                     FROM leaderboard
                 )
                 UPDATE leaderboard
                 SET place = Ranked.new_place
                 FROM Ranked
-                WHERE leaderboard.id = Ranked.id;
+                WHERE leaderboard.telegram_id = Ranked.telegram_id AND leaderboard.event_id = Ranked.event_id;
             `;
         });
 
