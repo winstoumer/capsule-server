@@ -61,35 +61,38 @@ export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
     }
 };
 
-// Функция для обновления или добавления баллов
+// Функция для обновления или добавления баллов и пересчета мест
 export const upsertPoints = async (telegramId: number, newPoints: number): Promise<void> => {
     try {
-        // Проверяем текущие баллы для данного telegramId
-        const currentEntry = await sql<any[]>`
-            SELECT points FROM leaderboard
-            WHERE telegram_id = ${telegramId};
-        `;
-
-        if (currentEntry.length > 0) {
-            const currentPoints = currentEntry[0].points;
-
-            // Обновляем запись, если новые баллы больше текущих
-            if (newPoints > currentPoints) {
-                await sql`
-                    UPDATE leaderboard
-                    SET points = ${newPoints}
-                    WHERE telegram_id = ${telegramId};
-                `;
-            }
-        } else {
-            // Добавляем новую запись, если её нет
-            await sql`
+        await sql.begin(async transaction => {
+            // Вставка или обновление записи
+            await transaction`
                 INSERT INTO leaderboard (telegram_id, points)
-                VALUES (${telegramId}, ${newPoints});
+                VALUES (${telegramId}, ${newPoints})
+                ON CONFLICT (telegram_id)
+                DO UPDATE SET points = EXCLUDED.points
+                WHERE leaderboard.points < EXCLUDED.points;
             `;
-        }
+
+            // Пересчет мест
+            await transaction`
+                WITH Ranked AS (
+                    SELECT
+                        telegram_id,
+                        points,
+                        RANK() OVER (ORDER BY points DESC) as new_place
+                    FROM leaderboard
+                )
+                UPDATE leaderboard
+                SET place = Ranked.new_place
+                FROM Ranked
+                WHERE leaderboard.telegram_id = Ranked.telegram_id;
+            `;
+        });
+
+        console.log('Баллы обновлены и места пересчитаны');
     } catch (error) {
-        console.error('Ошибка при обновлении или добавлении записи:', error);
+        console.error('Ошибка при обновлении или добавлении записи и пересчете мест:', error);
         throw error;
     }
 };
