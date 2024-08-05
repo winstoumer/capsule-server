@@ -16,6 +16,19 @@ interface Leader {
 // Функция для получения текущих лидеров с наградами
 export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
     try {
+        // Получение активного события
+        const activeEvent = await sql`
+            SELECT id FROM events
+            WHERE CURRENT_DATE BETWEEN start_date AND end_date
+            LIMIT 1;
+        `;
+
+        if (activeEvent.length === 0) {
+            throw new Error('Нет активных событий для получения лидеров.');
+        }
+
+        const eventId = activeEvent[0].id;
+
         const query = `
             SELECT 
                 l.place, 
@@ -28,19 +41,15 @@ export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
             JOIN 
                 users u ON l.telegram_id = u.telegram_id
             JOIN 
-                events e ON l.event_id = e.id
-            JOIN 
                 rewards r ON l.event_id = r.event_id AND l.place = r.place
             WHERE 
-                CURRENT_DATE BETWEEN e.start_date AND e.end_date
+                l.event_id = ${eventId}
             ORDER BY 
-                l.place ASC;
+                l.points DESC, l.place ASC;
         `;
 
-        // Выполнение запроса и типизация результата
         const rows = await sql.unsafe(query);
 
-        // Преобразование строк в структуру данных лидеров с наградами
         const leaders: Record<number, Leader> = {};
         rows.forEach((row: any) => {
             if (!leaders[row.place]) {
@@ -61,11 +70,10 @@ export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
     }
 };
 
-// Функция для обновления или добавления баллов и пересчета мест
 export const upsertPoints = async (telegramId: number, newPoints: number): Promise<void> => {
     try {
         await sql.begin(async transaction => {
-            // 1. Получение активного события
+            // Получение активного события
             const activeEvent = await transaction`
                 SELECT id FROM events
                 WHERE CURRENT_DATE BETWEEN start_date AND end_date
@@ -78,7 +86,7 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
 
             const eventId = activeEvent[0].id;
 
-            // 2. Проверка наличия записи для пользователя и события
+            // Проверка наличия записи для пользователя и события
             const existingEntry = await transaction`
                 SELECT id, points FROM leaderboard 
                 WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
@@ -110,7 +118,7 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
                 `;
             }
 
-            // 3. Пересчет мест
+            // Пересчет мест
             await transaction`
                 WITH Ranked AS (
                     SELECT
@@ -134,4 +142,3 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
         throw error;
     }
 };
-
