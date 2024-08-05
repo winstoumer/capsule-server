@@ -1,152 +1,93 @@
-// api/leaderboard/model.ts
+// api/leaderboard/leaderboard.model.ts
 import { sql } from '../database';
 
-interface Reward {
-    type: string;
-    value: string;
-}
-
-interface Leader {
-    place: number;
-    name: string;
-    points: number;
-    rewards: Reward[];
-}
-
-interface LeaderboardRecord {
+export interface LeaderboardEntry {
     telegram_id: number;
+    first_name: string;
     points: number;
+    event_id: number;
+    place?: number;  // Виртуальное поле для места
+    reward?: string; // Виртуальное поле для награды
 }
 
-// Функция для получения текущих лидеров с наградами
-export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
-    try {
-        // Получение активного события
-        const activeEvent = await sql`
-            SELECT id FROM events
-            WHERE CURRENT_DATE BETWEEN start_date AND end_date
-            LIMIT 1;
-        `;
-
-        if (activeEvent.length === 0) {
-            throw new Error('Нет активных событий для получения лидеров.');
-        }
-
-        const eventId = activeEvent[0].id;
-
-        const query = `
+export class LeaderboardModel {
+    static async getLeaderboard(eventId: number): Promise<LeaderboardEntry[]> {
+        const leaderboardResult = await sql`
             SELECT 
-                l.place, 
-                u.first_name AS name, 
-                l.points, 
-                r.reward_type AS reward_type, 
-                r.reward_value AS reward_value
-            FROM 
-                leaderboard l
-            JOIN 
-                users u ON l.telegram_id = u.telegram_id
-            JOIN 
-                rewards r ON l.event_id = r.event_id AND l.place = r.place
-            WHERE 
-                l.event_id = ${eventId}
-            ORDER BY 
-                l.points DESC, l.place ASC;
+                telegram_id, 
+                first_name, 
+                points, 
+                ROW_NUMBER() OVER (ORDER BY points DESC) AS place
+            FROM leaderboard
+            WHERE event_id = ${eventId}
+            ORDER BY points DESC
+            LIMIT 200
         `;
 
-        const rows = await sql.unsafe(query);
-
-        const leaders: Record<number, Leader> = {};
-        rows.forEach((row: any) => {
-            if (!leaders[row.place]) {
-                leaders[row.place] = {
-                    place: row.place,
-                    name: row.name,
-                    points: row.points,
-                    rewards: [],
-                };
-            }
-            leaders[row.place].rewards.push({ type: row.reward_type, value: row.reward_value });
-        });
-
-        return Object.values(leaders);
-    } catch (error) {
-        console.error('Ошибка при получении текущих лидеров:', error);
-        throw error;
-    }
-};
-
-const getCurrentEventId = async (): Promise<number> => {
-    try {
-        const result = await sql`
-            SELECT id FROM events
-            WHERE start_date <= CURRENT_DATE
-            AND end_date >= CURRENT_DATE
-            LIMIT 1;
+        const rewardsResult = await sql`
+            SELECT place, coins, multiplier, ton
+            FROM leaderboard_rewards
         `;
-        if (result.length === 0) {
-            throw new Error('Нет текущего события');
+
+        // Сопоставляем награды с местами
+        const rewardsMap = new Map<number, string>();
+        for (const reward of rewardsResult) {
+            rewardsMap.set(reward.place, `Coins: ${reward.coins || 0}, Multiplier: ${reward.multiplier || 'None'}, ${reward.ton || 0}TON`);
         }
-        return result[0].id;
-    } catch (error) {
-        console.error('Ошибка при получении текущего eventId:', error);
-        throw error;
-    }
-};
 
-export const upsertPoints = async (telegramId: number, newPoints: number): Promise<void> => {
-    try {
-        // 1. Получаем текущий event_id
-        const eventId = await getCurrentEventId();
+        return leaderboardResult.map((row: any) => {
+            const reward = rewardsMap.get(row.place) || 'No reward';
 
-        await sql.begin(async transaction => {
-            // 2. Получаем данные о текущих записях для данного события
-            const currentRecords = await transaction<LeaderboardRecord[]>`
-                SELECT * FROM leaderboard
-                WHERE event_id = ${eventId}
-                ORDER BY points DESC;
-            `;
-
-            // 3. Проверяем, существует ли запись для данного пользователя
-            const existingRecord = currentRecords.find(record => record.telegram_id === telegramId);
-
-            if (existingRecord) {
-                // 3.1 Если запись существует и новые points больше текущих, обновляем запись
-                if (newPoints > existingRecord.points) {
-                    await transaction`
-                        UPDATE leaderboard
-                        SET points = ${newPoints}
-                        WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
-                    `;
-                }
-            } else {
-                // 3.2 Если запись не существует, добавляем её
-                await transaction`
-                    INSERT INTO leaderboard (telegram_id, event_id, points)
-                    VALUES (${telegramId}, ${eventId}, ${newPoints});
-                `;
-            }
-
-            // 4. Пересчитываем места и присваиваем их записям
-            await transaction`
-                WITH Ranked AS (
-                    SELECT
-                        telegram_id,
-                        event_id,
-                        points,
-                        RANK() OVER (PARTITION BY event_id ORDER BY points DESC) as new_place
-                    FROM leaderboard
-                )
-                UPDATE leaderboard
-                SET place = Ranked.new_place
-                FROM Ranked
-                WHERE leaderboard.telegram_id = Ranked.telegram_id
-                AND leaderboard.event_id = Ranked.event_id;
-            `;
+            return {
+                telegram_id: row.telegram_id,
+                first_name: row.first_name,
+                points: row.points,
+                event_id: eventId,
+                place: row.place,
+                reward: reward // Добавляем виртуальное поле для награды
+            };
         });
-
-        console.log('Баллы обновлены и места пересчитаны');
-    } catch (error) {
-        console.error('Ошибка при обновлении или добавлении записи и пересчете мест:', error);
-        throw error;
     }
-};
+
+    static async addOrUpdateEntry(telegramId: number, points: number): Promise<void> {
+        const currentDate = new Date();
+
+        // Получаем first_name из таблицы users
+        const userResult = await sql`
+            SELECT first_name
+            FROM users
+            WHERE telegram_id = ${telegramId}
+        `;
+
+        if (userResult.length === 0) {
+            throw new Error('User not found');
+        }
+
+        const firstName = userResult[0].first_name;
+
+        // Получаем event_id и проверяем его даты
+        const eventResult = await sql`
+            SELECT id, start_date, end_date
+            FROM events
+            WHERE start_date <= ${currentDate} AND end_date >= ${currentDate}
+            LIMIT 1
+        `;
+
+        if (eventResult.length === 0) {
+            throw new Error('No ongoing event found');
+        }
+
+        const eventId = eventResult[0].id;
+
+        // Вставляем или обновляем запись в таблице leaderboard
+        await sql`
+            INSERT INTO leaderboard (telegram_id, first_name, points, event_id)
+            VALUES (${telegramId}, ${firstName}, ${points}, ${eventId})
+            ON CONFLICT (telegram_id, event_id) DO UPDATE
+            SET points = CASE
+                WHEN EXCLUDED.points > leaderboard.points THEN EXCLUDED.points
+                ELSE leaderboard.points
+            END
+        `;
+    }
+}
