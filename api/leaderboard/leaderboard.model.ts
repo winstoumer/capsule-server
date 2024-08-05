@@ -17,22 +17,28 @@ interface Leader {
 export const getCurrentLeadersWithRewards = async (): Promise<Leader[]> => {
     try {
         const query = `
-    SELECT 
-        l.place, 
-        u.first_name AS name, 
-        l.points
-    FROM 
-        leaderboard l
-    JOIN 
-        users u ON l.telegram_id = u.telegram_id
-    WHERE 
-        CURRENT_DATE BETWEEN '2024-01-01' AND '2024-12-31'
-    ORDER BY 
-        l.place ASC;
-`;
+            SELECT 
+                l.place, 
+                u.first_name AS name, 
+                l.points, 
+                r.reward_type AS reward_type, 
+                r.reward_value AS reward_value
+            FROM 
+                leaderboard l
+            JOIN 
+                users u ON l.telegram_id = u.telegram_id
+            JOIN 
+                events e ON l.event_id = e.id
+            JOIN 
+                rewards r ON l.event_id = r.event_id AND l.place = r.place
+            WHERE 
+                CURRENT_DATE BETWEEN e.start_date AND e.end_date
+            ORDER BY 
+                l.place ASC;
+        `;
 
         // Выполнение запроса и типизация результата
-        const rows = await sql<any[]>`${query}`;
+        const rows = await sql.unsafe(query);
 
         // Преобразование строк в структуру данных лидеров с наградами
         const leaders: Record<number, Leader> = {};
