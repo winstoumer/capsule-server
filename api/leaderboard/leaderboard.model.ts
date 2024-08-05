@@ -71,28 +71,28 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
                 WHERE CURRENT_DATE BETWEEN start_date AND end_date
                 LIMIT 1;
             `;
-            
+
             if (activeEvent.length === 0) {
                 throw new Error('Нет активных событий для обновления баллов.');
             }
-            
+
             const eventId = activeEvent[0].id;
 
             // 2. Проверка наличия записи для пользователя и события
             const existingEntry = await transaction`
-                SELECT points, place FROM leaderboard 
+                SELECT id, points, place FROM leaderboard 
                 WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
             `;
 
             if (existingEntry.length > 0) {
                 const currentPoints = existingEntry[0].points;
 
-                // Обновление записи, если новые баллы больше текущих
+                // Если новые баллы больше текущих, обновляем их
                 if (newPoints > currentPoints) {
                     await transaction`
                         UPDATE leaderboard
                         SET points = ${newPoints}
-                        WHERE telegram_id = ${telegramId} AND event_id = ${eventId};
+                        WHERE id = ${existingEntry[0].id};
                     `;
                 }
             } else {
@@ -114,6 +114,7 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
             await transaction`
                 WITH Ranked AS (
                     SELECT
+                        id,
                         telegram_id,
                         event_id,
                         points,
@@ -123,7 +124,7 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
                 UPDATE leaderboard
                 SET place = Ranked.new_place
                 FROM Ranked
-                WHERE leaderboard.telegram_id = Ranked.telegram_id AND leaderboard.event_id = Ranked.event_id;
+                WHERE leaderboard.id = Ranked.id;
             `;
         });
 
