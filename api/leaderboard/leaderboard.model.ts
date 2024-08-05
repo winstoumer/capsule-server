@@ -82,10 +82,13 @@ export const upsertPoints = async (telegramId: number, newPoints: number): Promi
                     `;
                 }
             } else {
-                // Вставка новой записи
+                // Вставка новой записи с начальным значением place
+                const newPlace = await transaction`
+                    SELECT COALESCE(MAX(place), 0) + 1 as new_place FROM leaderboard;
+                `;
                 await transaction`
-                    INSERT INTO leaderboard (telegram_id, points)
-                    VALUES (${telegramId}, ${newPoints});
+                    INSERT INTO leaderboard (telegram_id, points, place)
+                    VALUES (${telegramId}, ${newPoints}, ${newPlace[0].new_place});
                 `;
             }
 
